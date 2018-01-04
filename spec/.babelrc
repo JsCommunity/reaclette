@@ -1,9 +1,0 @@
-{
-  "plugins": [
-    "./_util/babel-resolve-paths-plugin",
-    "transform-react-jsx"
-  ],
-  "presets": [
-    ["env", { "targets": { "node": "current" } }]
-  ]
-}
