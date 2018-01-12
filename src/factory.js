@@ -180,7 +180,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               enumerable: true,
               value: (...args) => {
                 return new Promise(resolve =>
-                  resolve(e(effects, ...args))
+                  resolve(e(this._effects, ...args))
                 ).then(setState)
               },
             }
