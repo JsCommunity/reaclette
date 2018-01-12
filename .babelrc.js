@@ -19,12 +19,10 @@ module.exports = {
         debug: !__TEST__,
         loose: true,
         shippedProposals: true,
-        targets: __PROD__
-          ? {
-            browsers: '>2%',
-            node: '4',
-          }
-          : { node: 'current' },
+        targets: {
+          browsers: '>2%',
+          node: '4',
+        },
         useBuiltIns: '@babel/polyfill' in dependencies && 'usage',
       },
     ],
