@@ -1,5 +1,5 @@
 // React does not support symbols :/
-const TAG = 'freactal2'
+const TAG = '@julien-f/freactal'
 
 const call = f => f()
 const noop = () => {}

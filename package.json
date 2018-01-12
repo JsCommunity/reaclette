@@ -1,15 +1,14 @@
 {
-  "private": true,
-  "name": "freactal2",
+  "name": "@julien-f/freactal",
   "version": "0.0.0",
   "license": "ISC",
   "description": "",
   "keywords": [],
-  "homepage": "https://github.com/julien-f/freactal2",
-  "bugs": "https://github.com/julien-f/freactal2/issues",
+  "homepage": "https://github.com/julien-f/@julien-f/freactal",
+  "bugs": "https://github.com/julien-f/@julien-f/freactal/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julien-f/freactal2"
+    "url": "https://github.com/julien-f/@julien-f/freactal"
   },
   "author": {
     "name": "Julien Fontanet",

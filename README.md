@@ -1,4 +1,4 @@
-# freactal2 [![Build Status](https://travis-ci.org/${pkg.shortGitHubPath}.png?branch=master)](https://travis-ci.org/${pkg.shortGitHubPath})
+# @julien-f/freactal [![Build Status](https://travis-ci.org/${pkg.shortGitHubPath}.png?branch=master)](https://travis-ci.org/${pkg.shortGitHubPath})
 
 > ${pkg.description}
 
@@ -9,10 +9,10 @@ Differences with [freactal](https://github.com/FormidableLabs/freactal/):
 
 ## Install
 
-Installation of the [npm package](https://npmjs.org/package/freactal2):
+Installation of the [npm package](https://npmjs.org/package/@julien-f/freactal):
 
 ```
-> npm install --save freactal2
+> npm install --save @julien-f/freactal
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ Installation of the [npm package](https://npmjs.org/package/freactal2):
 ```js
 import React from 'react'
 import { render } from 'react-dom'
-import { injectState, provideState } from 'freactal2'
+import { injectState, provideState } from '@julien-f/freactal'
 
 const wrapComponentWithState = provideState({
   initialState: () => ({ counter: 0 }),
@@ -53,7 +53,7 @@ render(<Parent />, document.body)
 ```js
 /** @jsx Preact.h */
 import Preact, { render } from 'preact'
-import factory from 'freactal2/factory'
+import factory from '@julien-f/freactal/factory'
 
 const { injectState, provideState } = factory(Preact)
 
