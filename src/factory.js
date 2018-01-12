@@ -32,7 +32,7 @@ const makeSpy = (keys, accessor) => {
   return [create(null, descriptors), spy]
 }
 
-export default ({ Component, createElement, PropTypes }) => {
+module.exports = ({ Component, createElement, PropTypes }) => {
   const contextTypes_ = {
     [TAG]:
       PropTypes !== undefined

@@ -1,5 +1,1 @@
-import React from 'react'
-
-import factory from './factory'
-
-export const { injectState, provideState } = factory(React)
+module.exports = require('./factory')(require('react'))
