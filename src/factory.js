@@ -131,18 +131,6 @@ module.exports = ({ Component, createElement, PropTypes }) => {
         }
 
         if (computed !== undefined) {
-          const stateKeys = new Set()
-          for (const key in parentState) {
-            stateKeys.add(key)
-          }
-          for (const key in stateDescriptors) {
-            stateKeys.add(key)
-          }
-          for (const key in computed) {
-            stateKeys.add(key)
-          }
-          this._stateKeys = Array.from(stateKeys)
-
           const propsKeys = keys(props)
           const propsAccessor = k => this.props[k]
           const stateAccessor = k => this._state[k]
@@ -155,7 +143,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               get: () => {
                 if (propsProxy === undefined) {
                   [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
-                  [stateProxy, stateSpy] = makeSpy(stateKeys, stateAccessor)
+                  [stateProxy, stateSpy] = makeSpy(this._stateKeys, stateAccessor)
                 } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
                   return previousValue
                 }
@@ -167,6 +155,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           })
         }
 
+        this._stateKeys = Object.keys(stateDescriptors)
         const stateWrapper = (this._state = create(
           parentState || null,
           stateDescriptors
