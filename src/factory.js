@@ -58,7 +58,7 @@ export default ({ Component, createElement, PropTypes }) => {
 
         const { state } = parent;
         [this._stateProxy, this._stateSpy] = makeSpy(
-          keys(state),
+          parent.stateKeys,
           k => state[k]
         )
       }
@@ -141,16 +141,17 @@ export default ({ Component, createElement, PropTypes }) => {
           for (const key in computed) {
             stateKeys.add(key)
           }
+          this._stateKeys = Array.from(stateKeys)
 
           const propsKeys = keys(props)
           const propsAccessor = k => this.props[k]
           const stateAccessor = k => this._state[k]
 
+          // computed properties are non-enumerable to behave with effects
           keys(computed).forEach(k => {
             const c = computed[k]
             let previousValue, propsProxy, propsSpy, stateProxy, stateSpy
             stateDescriptors[k] = {
-              enumerable: true,
               get: () => {
                 if (propsProxy === undefined) {
                   [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
@@ -175,9 +176,9 @@ export default ({ Component, createElement, PropTypes }) => {
         if (effects !== undefined) {
           const setState = updater => {
             if (updater !== undefined) {
-              const toMerge = updater(stateWrapper, this.props)
-              if (toMerge != null) {
-                state = { ...state, ...toMerge }
+              const newState = updater(stateWrapper, this.props)
+              if (newState != null) {
+                state = newState
                 dispatch()
               }
             }
@@ -232,6 +233,7 @@ export default ({ Component, createElement, PropTypes }) => {
           [TAG]: {
             effects: this._effects,
             state: this._state,
+            stateKeys: this._stateKeys,
             subscribe: this._subscribe,
           },
         }

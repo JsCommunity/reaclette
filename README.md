@@ -6,7 +6,6 @@ Differences with [freactal](https://github.com/FormidableLabs/freactal/):
 
 - `props` are available both in effects and computed values
 - computed values are available in the `state` in effects
-- effects returns updated properties, not a complete new state, i.e. you don't need to merge the previous state yourself
 
 ## Install
 
@@ -28,7 +27,7 @@ import { injectState, provideState } from 'freactal2'
 const wrapComponentWithState = provideState({
   initialState: () => ({ counter: 0 }),
   effects: {
-    addOne: () => (state, props) => ({ counter: state.counter + 1 }),
+    addOne: () => (state, props) => ({ ...state, counter: state.counter + 1 }),
   },
   computed: {
     square: (state, props) => state.counter * state.counter,
