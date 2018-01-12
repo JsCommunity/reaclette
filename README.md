@@ -36,19 +36,19 @@ const wrapComponentWithState = provideState({
   },
   computed: {
     square: (state, props) => state.counter * state.counter,
-  }
+  },
 })
 
-const Parent = wrapComponentWithState(() =>
-  <Child />
-)
+const Parent = wrapComponentWithState(() => <Child />)
 
-const Child = injecState(({ effects, state }) =>
+const Child = injectState(({ effects, state }) => (
   <div>
-    Out counter is at: {state.counter}
-    <button onClick={effects.addOne}>Add one</button>
+    <p>Out counter is at: {state.counter}</p>
+    <p>
+      <button onClick={effects.addOne}>Add one</button>
+    </p>
   </div>
-)
+))
 
 render(<Parent />, document.body)
 ```
