@@ -17,6 +17,7 @@ module.exports = {
       {
         debug: !__TEST__,
         loose: true,
+        forceAllTransforms: true, // ES5 compatibility, requires for create-react-app
         shippedProposals: true,
         targets: {
           browsers: '>2%',
