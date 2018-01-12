@@ -6,7 +6,6 @@ const __TEST__ = NODE_ENV === 'test'
 
 module.exports = {
   comments: !__PROD__,
-  compact: __PROD__,
   ignore: __TEST__ ? undefined : [/\.spec\.js$/],
   plugins: [
     '@babel/plugin-proposal-class-properties',
