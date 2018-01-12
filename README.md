@@ -6,6 +6,11 @@ Differences with [freactal](https://github.com/FormidableLabs/freactal/):
 
 - `props` are available both in effects and computed values
 - computed values are available in the `state` in effects
+- `finalize` effect is triggered on unmount (symmetry with `initialize`)
+- no [helper functions](https://github.com/FormidableLabs/freactal#helper-functions) (not necessary)
+- no [hydrate support](https://github.com/FormidableLabs/freactal#hydrate-and-initialize)
+- no [middlewares support](https://github.com/FormidableLabs/freactal/#middleware)
+- no [test instances support](https://github.com/FormidableLabs/freactal/#state-and-effects)
 
 ## Install
 
