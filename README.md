@@ -2,6 +2,12 @@
 
 > ${pkg.description}
 
+Differences with [freactal](https://github.com/FormidableLabs/freactal/):
+
+- `props` are available both in effects and computed values
+- computed values are available in the `state` in effects
+- effects returns updated properties, not a complete new state, i.e. you don't need to merge the previous state yourself
+
 ## Install
 
 Installation of the [npm package](https://npmjs.org/package/freactal2):
