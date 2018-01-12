@@ -107,35 +107,13 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           }
         }
 
-        let parentEffects, parentState
-        {
-          const parent = context[TAG]
-          if (parent !== undefined) {
-            parentEffects = parent.effects
-            parentState = parent.state
-          }
-        }
-
         const stateDescriptors = create(null)
-
-        let state
-        if (initialState !== undefined) {
-          state = initialState(props)
-
-          keys(state).forEach(k => {
-            stateDescriptors[k] = {
-              enumerable: true,
-              get: () => state[k],
-            }
-          })
-        }
 
         if (computed !== undefined) {
           const propsKeys = keys(props)
           const propsAccessor = k => this.props[k]
-          const stateAccessor = k => this._state[k]
+          const stateAccessor = k => completeState[k]
 
-          // computed properties are non-enumerable to behave with effects
           keys(computed).forEach(k => {
             const c = computed[k]
             let previousValue, propsProxy, propsSpy, stateProxy, stateSpy
@@ -143,7 +121,10 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               get: () => {
                 if (propsProxy === undefined) {
                   [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
-                  [stateProxy, stateSpy] = makeSpy(this._stateKeys, stateAccessor)
+                  [stateProxy, stateSpy] = makeSpy(
+                    completeStateKeys,
+                    stateAccessor
+                  )
                 } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
                   return previousValue
                 }
@@ -155,17 +136,50 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           })
         }
 
-        this._stateKeys = Object.keys(stateDescriptors)
-        const stateWrapper = (this._state = create(
-          parentState || null,
+        let state
+        if (initialState !== undefined) {
+          state = initialState(props)
+
+          keys(state).forEach(k => {
+            if (!(k in stateDescriptors)) {
+              // only local, non-computed state entries are enumerable
+              stateDescriptors[k] = {
+                enumerable: true,
+                get: () => state[k],
+              }
+            }
+          })
+        }
+
+        let parentEffects = null
+        let parentState = null
+        let parentStateKeys = []
+        {
+          const parent = context[TAG]
+          if (parent !== undefined) {
+            parentEffects = parent.effects
+            parentState = parent.state
+            parentStateKeys = parent.stateKeys
+          }
+        }
+
+        const completeState = (this._state = create(
+          parentState,
           stateDescriptors
         ))
+        const completeStateKeys = (this._stateKeys = keys(stateDescriptors))
+
+        parentStateKeys.forEach(k => {
+          if (!(k in stateDescriptors)) {
+            completeStateKeys.push(k)
+          }
+        })
 
         let effectsDescriptors
         if (effects !== undefined) {
           const setState = updater => {
             if (updater !== undefined) {
-              const newState = updater(stateWrapper, this.props)
+              const newState = updater(completeState, this.props)
               if (newState != null) {
                 state = newState
                 dispatch()
@@ -186,7 +200,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             }
           })
         }
-        this._effects = create(parentEffects || null, effectsDescriptors)
+        this._effects = create(parentEffects, effectsDescriptors)
       }
 
       _unsubscribe = noop;
