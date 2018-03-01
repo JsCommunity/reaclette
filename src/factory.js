@@ -181,13 +181,19 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
           let effectsDescriptors
           if (effects !== undefined) {
-            const setState = updater => {
-              if (updater !== undefined) {
-                const newState = updater(completeState, this.props)
-                if (newState != null) {
-                  state = newState
-                  dispatch()
+            const setState = newState => {
+              if (newState != null) {
+                const {then} = newState
+                if (typeof then === 'function') {
+                  return then.call(newState, setState)
                 }
+                state = newState
+                dispatch()
+              }
+            }
+            const handleStateUpdater = updater => {
+              if (updater !== undefined) {
+                return setState(updater(completeState, this.props))
               }
             }
 
@@ -199,7 +205,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 value: (...args) => {
                   return new Promise(resolve =>
                     resolve(e(this._effects, ...args))
-                  ).then(setState)
+                  ).then(handleStateUpdater)
                 },
               }
             })
