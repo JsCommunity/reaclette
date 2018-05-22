@@ -1,1 +1,1 @@
-dist/factory.js
+module.exports = require('./dist/factory')
