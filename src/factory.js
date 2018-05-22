@@ -193,7 +193,10 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             }
             const handleStateUpdater = updater => {
               if (updater !== undefined) {
-                return setState(updater(completeState, this.props))
+                const { then } = updater
+                return typeof then === 'function'
+                  ? then.call(updater, handleStateUpdater)
+                  : setState(updater(completeState, this.props))
               }
             }
 
@@ -203,9 +206,11 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               effectsDescriptors[k] = {
                 enumerable: true,
                 value: (...args) => {
-                  return new Promise(resolve =>
-                    resolve(e(this._effects, ...args))
-                  ).then(handleStateUpdater)
+                  try {
+                    return Promise.resolve(handleStateUpdater(e(this._effects, ...args)))
+                  } catch (error) {
+                    return Promise.reject(error)
+                  }
                 },
               }
             })
