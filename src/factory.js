@@ -2,7 +2,7 @@
 const TAG = '@julien-f/freactal'
 
 const call = f => f()
-const noop = () => {}
+const noop = Function.prototype
 const { create, keys } = Object
 
 const makeSpy = (keys, accessor) => {
