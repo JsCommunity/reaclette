@@ -26,7 +26,7 @@ const presets = {
           return { node: node }
         }
       })()
-      : { browsers: '', node: 'current' },
+      : { node: 'current' },
     useBuiltIns: '@babel/polyfill' in (pkg.dependencies || {}) && 'usage',
   },
 }
