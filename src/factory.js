@@ -32,6 +32,17 @@ const makeSpy = (keys, accessor) => {
   return [create(null, descriptors), spy]
 }
 
+const defaultEffects = {
+  linkState: (_, { target }) => state => ({
+    ...state,
+    [target.name]: target.nodeName.toLowerCase() === 'input' &&
+      target.type.toLowerCase() === 'checkbox'
+      ? target.checked
+      : target.value,
+  }),
+  toggleState: (_, { target: { name } }) => state => ({ ...state, [name]: !state[name] }),
+}
+
 module.exports = ({ Component, createElement, PropTypes }) => {
   const contextTypes_ = {
     [TAG]:
@@ -143,6 +154,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           let state
           if (initialState !== undefined) {
             state = initialState(props)
+            effects = { ...defaultEffects, ...effects }
 
             keys(state).forEach(k => {
               if (!(k in stateDescriptors)) {
