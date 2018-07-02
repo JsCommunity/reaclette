@@ -150,6 +150,10 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 stateDescriptors[k] = {
                   enumerable: true,
                   get: () => state[k],
+                  set: value => {
+                    state = { ...state, [k]: value }
+                    dispatch()
+                  },
                 }
               }
             })
@@ -201,13 +205,17 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             }
 
             effectsDescriptors = create(null)
+            const context = {
+              effects,
+              state: completeState,
+            }
             keys(effects).forEach(k => {
               const e = effects[k]
               effectsDescriptors[k] = {
                 enumerable: true,
                 value: (...args) => {
                   try {
-                    return Promise.resolve(handleStateUpdater(e(this._effects, ...args)))
+                    return Promise.resolve(handleStateUpdater(e.call(context, this._effects, ...args)))
                   } catch (error) {
                     return Promise.reject(error)
                   }

@@ -32,6 +32,18 @@ const wrapComponentWithState = provideState({
   initialState: () => ({ counter: 0 }),
   effects: {
     addOne: () => (state, props) => ({ ...state, counter: state.counter + 1 }),
+    async loadData () {
+      const { state } = this
+      if (state.loading) {
+        return
+      }
+      state.loading = true
+      try {
+        state.data = await (await fetch('./data.json')).json()
+      } finally {
+        state.loading = false
+      }
+    }
   },
   computed: {
     square: (state, props) => state.counter * state.counter,
