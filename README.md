@@ -7,6 +7,7 @@ Differences with [freactal](https://github.com/FormidableLabs/freactal/):
 - `props` are available both in effects and computed values
 - computed values are available in the `state` in effects
 - `finalize` effect is triggered on unmount (symmetry with `initialize`)
+- easy [async effects](#async-effects)
 - no [helper functions](https://github.com/FormidableLabs/freactal#helper-functions) (not necessary)
 - no [hydrate support](https://github.com/FormidableLabs/freactal#hydrate-and-initialize)
 - no [middlewares support](https://github.com/FormidableLabs/freactal/#middleware)
@@ -32,18 +33,6 @@ const wrapComponentWithState = provideState({
   initialState: () => ({ counter: 0 }),
   effects: {
     addOne: () => (state, props) => ({ ...state, counter: state.counter + 1 }),
-    async loadData () {
-      const { state } = this
-      if (state.loading) {
-        return
-      }
-      state.loading = true
-      try {
-        state.data = await (await fetch('./data.json')).json()
-      } finally {
-        state.loading = false
-      }
-    }
   },
   computed: {
     square: (state, props) => state.counter * state.counter,
@@ -75,6 +64,37 @@ const { injectState, provideState } = factory(Preact)
 
 // The rest is the same.
 ```
+
+### Async effects
+
+Effects can access the state through `this`, for reading and writing, which is
+very convenient when the state needs to be updated multiple times.
+
+```js
+provideState({
+  initialState: () => ({
+    data: undefined,
+    loading: false,
+  }),
+  effects: {
+    loadData: async function () {
+      const { state } = this
+      if (state.data !== undefined || state.loading) {
+        return
+      }
+
+      state.loading = true
+      try {
+        state.data = await fetchData()
+      } finally {
+        state.loading = false
+      }
+    }
+  }
+})
+```
+
+###
 
 ### Testing
 
