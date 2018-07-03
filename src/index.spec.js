@@ -14,7 +14,7 @@ const makeTestInstance = (opts, props) => {
     ...opts,
     effects: {
       ...opts.effects,
-      _setState: (_, props) => state => ({ ...state, ...props }),
+      _setState: (_, props) => _ => props,
     },
   })(injectState(Child)), props))
   return {

@@ -8,6 +8,7 @@ Differences with [freactal](https://github.com/FormidableLabs/freactal/):
 - computed values are available in the `state` in effects
 - `finalize` effect is triggered on unmount (symmetry with `initialize`)
 - easy [async effects](#async-effects)
+- update state by default: no need for `Object.assign()` and `{...state}`
 - no [helper functions](https://github.com/FormidableLabs/freactal#helper-functions) (not necessary)
 - no [hydrate support](https://github.com/FormidableLabs/freactal#hydrate-and-initialize)
 - no [middlewares support](https://github.com/FormidableLabs/freactal/#middleware)
@@ -32,7 +33,7 @@ import { injectState, provideState } from '@julien-f/freactal'
 const wrapComponentWithState = provideState({
   initialState: () => ({ counter: 0 }),
   effects: {
-    addOne: () => (state, props) => ({ ...state, counter: state.counter + 1 }),
+    addOne: () => (state, props) => ({ counter: state.counter + 1 }),
   },
   computed: {
     square: (state, props) => state.counter * state.counter,
@@ -113,11 +114,9 @@ export default provideState({
   }),
   effects: {
     onChangeGiven: (_, { target: { value } }) => state => ({
-      ...state,
       givenName: value,
     }),
     onChangeFamily: (_, { target: { value } }) => state => ({
-      ...state,
       familyName: value,
     }),
   },

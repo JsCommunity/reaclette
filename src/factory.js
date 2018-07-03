@@ -191,7 +191,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 if (typeof then === 'function') {
                   return then.call(newState, setState)
                 }
-                state = newState
+                state = { ...state, ...newState }
                 dispatch()
               }
             }
