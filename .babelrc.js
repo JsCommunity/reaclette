@@ -1,22 +1,22 @@
 'use strict'
 
+const PLUGINS_RE = /^(?:@babel\/|babel-)plugin-.+$/
+const PRESETS_RE = /^@babel\/preset-.+$/
+
 const NODE_ENV = process.env.NODE_ENV || 'development'
 const __PROD__ = NODE_ENV === 'production'
 const __TEST__ = NODE_ENV === 'test'
 
-const pkg = require('./package')
-
-const plugins = {
-  lodash: {},
-}
-
-const presets = {
-  '@babel/preset-env': {
-    debug: !__TEST__,
-    loose: true,
-    shippedProposals: true,
-    targets: __PROD__
-      ? (() => {
+const configs = {
+  '@babel/plugin-proposal-decorators': {
+    legacy: true,
+  },
+  '@babel/preset-env' (pkg) {
+    return {
+      debug: !__TEST__,
+      loose: true,
+      shippedProposals: true,
+      targets: (() => {
         let node = (pkg.engines || {}).node
         if (node !== undefined) {
           const trimChars = '^=>~'
@@ -25,17 +25,30 @@ const presets = {
           }
           return { node: node }
         }
-      })()
-      : { node: 'current' },
-    useBuiltIns: '@babel/polyfill' in (pkg.dependencies || {}) && 'usage',
+      })(),
+      useBuiltIns: '@babel/polyfill' in (pkg.dependencies || {}) && 'usage',
+    }
   },
 }
 
+const getConfig = (key, ...args) => {
+  const config = configs[key]
+  return config === undefined
+    ? {}
+    : typeof config === 'function'
+      ? config(...args)
+      : config
+}
+
+const plugins = {}
+const presets = {}
+
+const pkg = require('./package.json')
 Object.keys(pkg.devDependencies || {}).forEach(name => {
-  if (!(name in presets) && /@babel\/plugin-.+/.test(name)) {
-    plugins[name] = {}
-  } else if (!(name in presets) && /@babel\/preset-.+/.test(name)) {
-    presets[name] = {}
+  if (!(name in presets) && PLUGINS_RE.test(name)) {
+    plugins[name] = getConfig(name, pkg)
+  } else if (!(name in presets) && PRESETS_RE.test(name)) {
+    presets[name] = getConfig(name, pkg)
   }
 })
 
