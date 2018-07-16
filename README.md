@@ -1,6 +1,6 @@
-# @julien-f/freactal [![Build Status](https://travis-ci.org/${pkg.shortGitHubPath}.png?branch=master)](https://travis-ci.org/${pkg.shortGitHubPath})
+# @julien-f/freactal [![Build Status](https://travis-ci.org/julien-f/freactal.png?branch=master)](https://travis-ci.org/julien-f/freactal)
 
-> ${pkg.description}
+> Inspired by Freactal, but better :wink:
 
 Differences with [freactal](https://github.com/FormidableLabs/freactal/):
 
@@ -276,7 +276,7 @@ the code.
 
 You may:
 
-- report any [issue](${pkg.bugs})
+- report any [issue](https://github.com/julien-f/freactal/issues)
   you've encountered;
 - fork and create a pull request.
 
