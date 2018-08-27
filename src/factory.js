@@ -33,14 +33,13 @@ const makeSpy = (keys, accessor) => {
 }
 
 const defaultEffects = {
-  linkState: (_, { target }) => state => ({
-    ...state,
+  linkState: (_, { target }) => () => ({
     [target.name]: target.nodeName.toLowerCase() === 'input' &&
       target.type.toLowerCase() === 'checkbox'
       ? target.checked
       : target.value,
   }),
-  toggleState: (_, { target: { name } }) => state => ({ ...state, [name]: !state[name] }),
+  toggleState: (_, { target: { name } }) => state => ({ [name]: !state[name] }),
 }
 
 module.exports = ({ Component, createElement, PropTypes }) => {
