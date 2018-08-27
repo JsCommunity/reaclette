@@ -42,6 +42,18 @@ const defaultEffects = {
   toggleState: (_, { target: { name } }) => state => ({ [name]: !state[name] }),
 }
 
+defaultEffects.linkState.trim = (_, { target }) => state => {
+  if (target.nodeName.toLowerCase() === 'input' &&
+    target.type.toLowerCase() === 'checkbox') {
+    return {
+      [target.name]: target.checked,
+    }
+  }
+
+  const { value } = target
+  return typeof value === 'string' ? value.trim() : value
+}
+
 module.exports = ({ Component, createElement, PropTypes }) => {
   const contextTypes_ = {
     [TAG]:
