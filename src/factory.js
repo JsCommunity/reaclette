@@ -211,15 +211,22 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             }
             keys(effects).forEach(k => {
               const e = effects[k]
-              effectsDescriptors[k] = {
-                enumerable: true,
-                value: (...args) => {
-                  try {
-                    return Promise.resolve(handleStateUpdater(e.call(context, this._effects, ...args)))
-                  } catch (error) {
-                    return Promise.reject(error)
-                  }
-                },
+              const wrappedEffect = (...args) => {
+                try {
+                  return Promise.resolve(handleStateUpdater(e.call(context, this._effects, ...args)))
+                } catch (error) {
+                  return Promise.reject(error)
+                }
+              }
+
+              // this special effects are not callable manually and not inheritable
+              if (k === 'initialize' || k === 'finalize') {
+                this[k] = wrappedEffect
+              } else {
+                effectsDescriptors[k] = {
+                  enumerable: true,
+                  value: wrappedEffect,
+                }
               }
             })
           }
@@ -234,7 +241,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             this._unsubscribe = parent.subscribe(this._dispatch)
           }
 
-          const { initialize } = this._effects
+          const { initialize } = this
           if (initialize !== undefined) {
             initialize()
           }
@@ -245,7 +252,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
         }
 
         componentWillUnmount () {
-          const { finalize } = this._effects
+          const { finalize } = this
           if (finalize !== undefined) {
             finalize()
           }
