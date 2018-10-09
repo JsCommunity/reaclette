@@ -43,15 +43,18 @@ const defaultEffects = {
 }
 
 defaultEffects.linkState.trim = (_, { target }) => state => {
+  const { name } = target
   if (target.nodeName.toLowerCase() === 'input' &&
     target.type.toLowerCase() === 'checkbox') {
     return {
-      [target.name]: target.checked,
+      [name]: target.checked,
     }
   }
 
   const { value } = target
-  return typeof value === 'string' ? value.trim() : value
+  return {
+    [name]: typeof value === 'string' ? value.trim() : value,
+  }
 }
 
 module.exports = ({ Component, createElement, PropTypes }) => {
