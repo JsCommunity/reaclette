@@ -53,7 +53,7 @@ describe('provideState', () => {
           },
         },
       })
-      effects.foo('bar', 'baz')
+      return effects.foo('bar', 'baz')
     })
 
     it('always returns a Promise to undefined', () => {
