@@ -10,17 +10,20 @@ configure({ adapter: new (require('enzyme-adapter-react-16'))() })
 
 const makeTestInstance = (opts, props) => {
   const Child = () => null
-  const wrapper = mount(createElement(provideState({
+  const parent = mount(createElement(provideState({
     ...opts,
     effects: {
       ...opts.effects,
       _setState: (_, props) => _ => props,
     },
   })(injectState(Child)), props))
+  const child = parent.find(Child)
   return {
-    effects: wrapper.find(Child).props().effects,
-    getState: () => wrapper.find(Child).props().state,
-    setProps: wrapper.setProps.bind(wrapper),
+    effects: child.prop('effects'),
+    getInjectedState: () => child.prop('state'),
+    getParentState: () => parent.instance()._state,
+    getParentProps: () => parent.instance().props,
+    setParentProps: parent.setProps.bind(parent),
   }
 }
 
@@ -29,16 +32,16 @@ const noop = () => {}
 describe('provideState', () => {
   describe('initialState', () => {
     it('is called with the props to create the initial state', () => {
-      const instance = makeTestInstance(
+      const props = { bar: 'baz' }
+      expect(makeTestInstance(
         {
-          initialState: props => {
-            expect(props).toEqual({ bar: 'baz' })
+          initialState: (...args) => {
+            expect(args).toEqual([ props ])
             return { foo: 'bar' }
           },
         },
-        { bar: 'baz' }
-      )
-      expect(instance.getState()).toEqual({ foo: 'bar' })
+        props
+      ).getInjectedState()).toEqual({ foo: 'bar' })
     })
   })
 
@@ -53,7 +56,20 @@ describe('provideState', () => {
           },
         },
       })
-      return effects.foo('bar', 'baz')
+      return effects.foo(...args)
+    })
+
+    it('are called with effects, props and state in context', () => {
+      const { effects, getParentProps, getParentState } = makeTestInstance({
+        effects: {
+          foo () {
+            expect(this.effects).toBe(effects)
+            expect(this.props).toBe(getParentProps())
+            expect(this.state).toBe(getParentState())
+          },
+        },
+      })
+      return effects.foo()
     })
 
     it('always returns a Promise to undefined', () => {
@@ -70,7 +86,7 @@ describe('provideState', () => {
 
   describe('computed', () => {
     const sum = jest.fn(({ foo }, { bar }) => foo + bar)
-    const { effects, getState, setProps } = makeTestInstance({
+    const { effects, getInjectedState, setParentProps } = makeTestInstance({
       initialState: () => ({ foo: 1, qux: 2 }),
       computed: {
         sum,
@@ -78,33 +94,33 @@ describe('provideState', () => {
     }, { bar: 3, baz: 4 })
 
     it('is not computed before access', () => {
-      getState()
+      getInjectedState()
       expect(sum).not.toHaveBeenCalled()
     })
 
     it('returns the result of the computation', () => {
-      expect(getState().sum).toBe(4)
+      expect(getInjectedState().sum).toBe(4)
       expect(sum).toHaveBeenCalledTimes(1)
     })
 
     it('is not recomputed when its inputs do not change ', () => {
-      setProps({ baz: 5 })
+      setParentProps({ baz: 5 })
       return effects._setState({ qux: 3 }).then(() => {
-        noop(getState().sum)
+        noop(getInjectedState().sum)
         expect(sum).toHaveBeenCalledTimes(1)
       })
     })
 
     it('is recomputed when its state inputs change', () => {
       return effects._setState({ foo: 2 }).then(() => {
-        expect(getState().sum).toBe(5)
+        expect(getInjectedState().sum).toBe(5)
         expect(sum).toHaveBeenCalledTimes(2)
       })
     })
 
     it('is recomputed when its props inputs change', () => {
-      setProps({ bar: 4 })
-      expect(getState().sum).toBe(6)
+      setParentProps({ bar: 4 })
+      expect(getInjectedState().sum).toBe(6)
       expect(sum).toHaveBeenCalledTimes(3)
     })
   })
