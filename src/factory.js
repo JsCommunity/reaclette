@@ -205,15 +205,15 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             }
 
             effectsDescriptors = create(null)
-            const context = {
-              effects,
-              state: completeState,
-            }
             keys(effects).forEach(k => {
               const e = effects[k]
               const wrappedEffect = (...args) => {
                 try {
-                  return Promise.resolve(handleStateUpdater(e.call(context, this._effects, ...args)))
+                  return Promise.resolve(handleStateUpdater(e.call({
+                    effects: this._effects,
+                    props: this.props,
+                    state: completeState,
+                  }, this._effects, ...args)))
                 } catch (error) {
                   return Promise.reject(error)
                 }
