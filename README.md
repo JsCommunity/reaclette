@@ -8,6 +8,7 @@ Differences with [freactal](https://github.com/FormidableLabs/freactal/):
 - computed values are available in the `state` in effects
 - `finalize` effect is triggered on unmount (symmetry with `initialize`)
 - easy [async effects](#async-effects)
+- [async computed support](#async-computed)
 - update state by default: no need for `Object.assign()` and `{...state}`
 - no [helper functions](https://github.com/FormidableLabs/freactal#helper-functions) (not necessary)
 - no [hydrate support](https://github.com/FormidableLabs/freactal#hydrate-and-initialize)
@@ -93,6 +94,33 @@ provideState({
     }
   }
 })
+```
+
+### Async computed
+
+Computed factories can be asynchronous and return promises.
+
+```js
+const CitySelector = provideState({
+  computed: {
+    // it simply returns a promise instead of a value
+    //
+    // the computed is undefined in the render before the promise settles
+    //
+    // rejections are not handled and will possibly trigger an
+    // unhandledRejection event on the window object, the computed will stay
+    // undefined
+    cities: ({ country }) => loadCities(country)
+  }
+})(
+  injectState(({ onChange, state, effects, value }) => (
+    <select onChange={onChange} value={value}>
+      {state.cities !== undefined
+        ? state.cites.map(city => <option>{city}</option>)
+        : null}
+    </select>
+  ))
+)
 ```
 
 ### Testing
