@@ -187,7 +187,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           if (effects !== undefined) {
             const setState = newState => {
               if (newState != null) {
-                const {then} = newState
+                const { then } = newState
                 if (typeof then === 'function') {
                   return then.call(newState, setState)
                 }
