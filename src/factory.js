@@ -2,6 +2,7 @@
 const TAG = 'reaclette'
 
 const call = f => f()
+const isPromise = v => v != null && typeof v.then === 'function'
 const noop = Function.prototype
 const { create, keys } = Object
 
@@ -130,11 +131,26 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                       stateAccessor
                     )
                   } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
-                    return previousValue
+                    return isPromise(previousValue) ? undefined : previousValue
                   }
+
                   propsSpy.clear()
                   stateSpy.clear()
-                  return (previousValue = c(stateProxy, propsProxy))
+                  previousValue = c(stateProxy, propsProxy)
+                  if (!isPromise(previousValue)) {
+                    return previousValue
+                  }
+
+                  // rejections are explicitly not handled
+                  const promise = previousValue
+                  previousValue.then(
+                    value => {
+                      if (previousValue === promise) {
+                        previousValue = value
+                        dispatch()
+                      }
+                    }
+                  )
                 },
               }
             })
