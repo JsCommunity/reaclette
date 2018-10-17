@@ -95,8 +95,6 @@ provideState({
 })
 ```
 
-###
-
 ### Testing
 
 > This example comes from the excellent [Freactal documentation](https://github.com/FormidableLabs/freactal/#testing).
