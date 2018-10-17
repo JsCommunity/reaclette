@@ -1,14 +1,14 @@
 {
-  "name": "@julien-f/freactal",
+  "name": "reaclette",
   "version": "0.4.0",
   "license": "ISC",
   "description": "",
   "keywords": [],
-  "homepage": "https://github.com/julien-f/freactal",
-  "bugs": "https://github.com/julien-f/freactal/issues",
+  "homepage": "https://github.com/julien-f/reaclette",
+  "bugs": "https://github.com/julien-f/reaclette/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julien-f/freactal"
+    "url": "https://github.com/julien-f/reaclette"
   },
   "author": {
     "name": "Julien Fontanet",

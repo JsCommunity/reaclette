@@ -1,4 +1,4 @@
-# @julien-f/freactal [![Build Status](https://travis-ci.org/julien-f/freactal.png?branch=master)](https://travis-ci.org/julien-f/freactal)
+# reaclette [![Build Status](https://travis-ci.org/julien-f/reaclette.png?branch=master)](https://travis-ci.org/julien-f/reaclette)
 
 > Inspired by Freactal, but better :wink:
 
@@ -15,10 +15,10 @@ Differences with [freactal](https://github.com/FormidableLabs/freactal/):
 
 ## Install
 
-Installation of the [npm package](https://npmjs.org/package/@julien-f/freactal):
+Installation of the [npm package](https://npmjs.org/package/reaclette):
 
 ```
-> npm install --save @julien-f/freactal
+> npm install --save reaclette
 ```
 
 ## Usage
@@ -28,7 +28,7 @@ Installation of the [npm package](https://npmjs.org/package/@julien-f/freactal):
 ```js
 import React from 'react'
 import { render } from 'react-dom'
-import { injectState, provideState } from '@julien-f/freactal'
+import { injectState, provideState } from 'reaclette'
 
 const wrapComponentWithState = provideState({
   initialState: () => ({ counter: 0 }),
@@ -59,7 +59,7 @@ render(<Parent />, document.body)
 ```js
 /** @jsx Preact.h */
 import Preact, { render } from 'preact'
-import factory from '@julien-f/freactal/factory'
+import factory from 'reaclette/factory'
 
 const { injectState, provideState } = factory(Preact)
 
@@ -105,7 +105,7 @@ provideState({
 
 ```js
 import React from 'react'
-import { injectState, provideState } from '@julien-f/freactal'
+import { injectState, provideState } from 'reaclette'
 
 export default provideState({
   initialState: () => ({
@@ -276,7 +276,7 @@ the code.
 
 You may:
 
-- report any [issue](https://github.com/julien-f/freactal/issues)
+- report any [issue](https://github.com/julien-f/reaclette/issues)
   you've encountered;
 - fork and create a pull request.
 
