@@ -1,358 +1,218 @@
-import CircularComputedError from "./_CircularComputedError";
-import InvalidEntryError from "./_InvalidEntryError";
+const React = require("react");
 
-// React does not support symbols :/
-const TAG = "reaclette";
+const CircularComputedError = require("./_CircularComputedError");
 
-const call = f => f();
-const isPromise = v => v != null && typeof v.then === "function";
+const {
+  create,
+  defineProperty,
+  freeze,
+  keys,
+  prototype: { hasOwnProperty },
+  seal,
+} = Object;
+
+const EMPTY_A = freeze([]);
+const EMPTY_O = freeze({ __proto__: null });
 const noop = Function.prototype;
-const { create, keys, seal } = Object;
 
-const makeSpy = (keys, accessor) => {
-  const descriptors = create(null);
-  const spy = new Map();
-  keys.forEach(k => {
-    descriptors[k] = {
-      enumerable: true,
-      get: () => {
-        let v = spy.get(k);
-        if (v === undefined && !spy.has(k)) {
-          v = accessor(k);
-          spy.set(k, v);
-        }
-        return v;
-      },
-    };
-  });
-  spy.upToDate = () => {
-    for (const [key, value] of spy) {
-      if (accessor(key) !== value) {
-        return false;
-      }
-    }
-    return true;
-  };
-  return [create(null, descriptors), spy];
-};
+class Spy {
+  constructor(keys, accessor) {
+    this._accessor = accessor;
+    this._keys = keys;
+    this.reset();
 
-module.exports = ({ Component, createElement, PropTypes }) => {
-  const contextTypes_ = {
-    [TAG]:
-      PropTypes !== undefined
-        ? PropTypes.shape({
-            effects: PropTypes.object.isRequired,
-            state: PropTypes.object.isRequired,
-            subscribe: PropTypes.func.isRequired,
-          })
-        : noop,
-  };
-
-  const injectState = ChildComponent =>
-    class StateInjector extends Component {
-      static WrappedComponent = ChildComponent;
-
-      static contextTypes = contextTypes_;
-
-      constructor(_, context) {
-        super();
-
-        const parent = context[TAG];
-        if (parent === undefined) {
-          throw new TypeError("missing state");
-        }
-
-        const { state } = parent;
-        [this._stateProxy, this._stateSpy] = makeSpy(
-          parent.stateKeys,
-          k => state[k]
-        );
-        seal(this._stateProxy);
-      }
-
-      componentDidMount() {
-        const spy = this._stateSpy;
-        this.componentWillUnmount = this.context[TAG].subscribe(() => {
-          if (!spy.upToDate()) {
-            this.forceUpdate();
+    const descriptors = {};
+    keys.forEach(key => {
+      descriptors[key] = {
+        get: () => {
+          const accessed = this._accessed;
+          let value = accessed[key];
+          if (value === undefined && !hasOwnProperty.call(accessed, key)) {
+            value = accessed[key] = accessor(key);
           }
-        });
-      }
+          return value;
+        },
+      };
+    });
+    this.proxy = create(null, descriptors);
+  }
 
-      render() {
-        this._stateSpy.clear();
+  isUpToDate() {
+    const accessed = this._accessed;
+    const accessor = this._accessor;
+    return keys(accessed).every(key => accessed[key] === accessor(key));
+  }
 
-        return createElement(ChildComponent, {
-          ...this.props,
-          effects: this.context[TAG].effects,
-          resetState: this.context[TAG].resetState,
-          state: this._stateProxy,
-        });
-      }
-    };
+  reset() {
+    this._accessed = { __proto__: null };
+  }
+}
 
-  const provideState = ({ computed, effects, initialState }) => {
-    const wrapComponentWithState = ChildComponent => {
-      class StateProvider extends Component {
-        static WrappedComponent =
-          (ChildComponent != null && ChildComponent.WrappedComponent) ||
-          ChildComponent;
-        static wrapComponentWithState = wrapComponentWithState;
+module.exports = ({ Component }) => {
+  function withStore({ computed, effects, initialState }, fn) {
+    const computedKeys = computed === undefined ? EMPTY_A : keys(computed);
+    const effectsKeys = effects === undefined ? EMPTY_A : keys(effects);
 
-        static childContextTypes = contextTypes_;
-        static contextTypes = contextTypes_;
+    return class Decorated extends React.PureComponent {
+      constructor(props) {
+        super(props);
 
-        constructor(props, context) {
-          super();
+        const stateProxyDescriptors = {};
 
-          const listeners = new Set();
-          const dispatch = (this._dispatch = () => {
-            // computedCache.clear()
-            listeners.forEach(call);
-          });
-          this._subscribe = listener => {
-            listeners.add(listener);
-            return () => {
-              listeners.delete(listener);
-            };
+        let state = initialState === undefined ? EMPTY_O : initialState(props);
+        const stateKeys = keys(state);
+        // entries are non enumerable to discourage spreading
+        stateKeys.forEach(key => {
+          stateProxyDescriptors[key] = {
+            get: () => state[key],
           };
+        });
 
-          const stateDescriptors = create(null);
-          const writableStateDescriptors = create(null);
+        if (computedKeys.length !== 0) {
+          const fullStateKeys = stateKeys.concat(computedKeys);
+          const propsAccessor = k => this.props[k];
+          const propsKeys = keys(props);
+          const stateAccessor = k => stateProxy[k];
 
-          if (computed !== undefined) {
-            const propsKeys = keys(props);
-            const propsAccessor = k => this.props[k];
-            const stateAccessor = k => completeState[k];
+          computedKeys.forEach(key => {
+            if (hasOwnProperty.call(state, key)) {
+              throw new TypeError(
+                `conflict: "${key}" is defined both in state and computed`
+              );
+            }
 
-            keys(computed).forEach(k => {
-              const c = computed[k];
-              let previousValue, propsProxy, propsSpy, stateProxy, stateSpy;
-              writableStateDescriptors[k] = stateDescriptors[k] = {
-                get: () => {
-                  if (propsProxy === undefined) {
-                    [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
-                    seal(propsProxy);
-                    [stateProxy, stateSpy] = makeSpy(
-                      completeStateKeys.filter(key => key !== k),
+            const c = computed[key];
+            let promise, propsSpy, stateSpy, value;
+            stateProxyDescriptors[key] = {
+              get: () => {
+                do {
+                  if (propsSpy === undefined) {
+                    propsSpy = new Spy(propsKeys, propsAccessor);
+                    seal(propsSpy.proxy);
+                    stateSpy = new Spy(
+                      fullStateKeys.filter(_ => _ !== key),
                       stateAccessor
                     );
-                    Object.defineProperty(stateProxy, k, {
-                      get() {
-                        throw new CircularComputedError(k);
-                      },
-                    });
-                    seal(stateProxy);
-                  } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
-                    return isPromise(previousValue) ? undefined : previousValue;
+                    seal(
+                      defineProperty(stateSpy.proxy, key, {
+                        get() {
+                          throw new CircularComputedError(key);
+                        },
+                      })
+                    );
+                  } else if (propsSpy.isUpToDate() && stateSpy.isUpToDate()) {
+                    break;
                   }
 
-                  propsSpy.clear();
-                  stateSpy.clear();
+                  propsSpy.reset();
+                  stateSpy.reset();
 
                   try {
-                    previousValue = c(stateProxy, propsProxy);
+                    value = c(stateSpy.proxy, propsSpy.proxy);
                   } catch (error) {
                     if (error instanceof CircularComputedError) {
                       throw error;
                     }
-                    console.warn(`computed "${k}" thrown`, error);
-                    // as per #21, keep the previous value in case of error
+
+                    console.warn(`computed "${key}" thrown`, error);
+                    break;
                   }
 
-                  if (!isPromise(previousValue)) {
-                    return previousValue;
+                  if (value == null) {
+                    break;
                   }
 
-                  // rejections are explicitly not handled
-                  const promise = previousValue;
-                  previousValue.then(value => {
-                    if (previousValue === promise) {
-                      previousValue = value;
-                      dispatch();
-                    }
-                  });
-                },
-              };
-            });
-          }
+                  if (typeof value.then === "function") {
+                    promise = value;
+                    value = undefined;
 
-          let state;
-          if (initialState !== undefined) {
-            state = initialState(props);
+                    // rejections are explicitly not handled
+                    const p = promise;
+                    promise.then(v => {
+                      if (promise === p) {
+                        promise = undefined;
+                        value = v;
+                        this.forceUpdate();
+                      }
+                    });
+                  }
+                } while (false);
 
-            keys(state).forEach(k => {
-              if (k in stateDescriptors) {
-                throw new TypeError(
-                  `conflict: "${k}" is defined both in state and computed`
-                );
-              }
-              // only local, non-computed state entries are enumerable
-              const roDescriptor = {
-                enumerable: true,
-                get: () => state[k],
-              };
-              stateDescriptors[k] = roDescriptor;
-              writableStateDescriptors[k] = {
-                ...roDescriptor,
-                set: value => {
-                  state = { ...state, [k]: value };
-                  dispatch();
-                },
-              };
-            });
-          }
-
-          let parentEffects = null;
-          let parentState = null;
-          let parentStateKeys = [];
-          {
-            const parent = context[TAG];
-            if (parent !== undefined) {
-              parentEffects = parent.effects;
-              parentState = parent.state;
-              parentStateKeys = parent.stateKeys;
-            }
-          }
-
-          const completeState = (this._state = seal(
-            create(parentState, stateDescriptors)
-          ));
-          const completeStateKeys = (this._stateKeys = keys(stateDescriptors));
-
-          this._resetState = () => {
-            state = initialState(this.props);
-            dispatch();
-            return Promise.resolve();
-          };
-
-          parentStateKeys.forEach(k => {
-            if (!(k in stateDescriptors)) {
-              completeStateKeys.push(k);
-            }
-          });
-
-          let effectsDescriptors;
-          if (effects !== undefined) {
-            const writableState = seal(create(null, writableStateDescriptors));
-
-            const setState = newState => {
-              if (newState == null) {
-                return;
-              }
-
-              if (typeof newState === "function") {
-                return setState(newState(completeState, this.props));
-              }
-
-              const { then } = newState;
-              if (typeof then === "function") {
-                return then.call(newState, setState);
-              }
-
-              Object.keys(newState).forEach(key => {
-                if (!Object.prototype.hasOwnProperty.call(state, key)) {
-                  throw new InvalidEntryError(key);
-                }
-              });
-              state = { ...state, ...newState };
-              dispatch();
+                return value;
+              },
             };
+          });
+        }
 
-            effectsDescriptors = create(null);
-            keys(effects).forEach(k => {
-              const e = effects[k];
-              const wrappedEffect = (...args) => {
+        const stateProxy = seal(create(null, stateProxyDescriptors));
+
+        const resetState = () => {
+          // TODO: check new state has the same keys
+          state = initialState(this.props);
+          this.forceUpdate();
+
+          return Promise.resolve();
+        };
+
+        let wrappedEffects;
+        if (effectsKeys.length === 0) {
+          wrappedEffects = EMPTY_O;
+        } else {
+          const descriptors = {};
+          effectsKeys.forEach(key => {
+            const effect = effects[key];
+
+            descriptors[key] = {
+              value: function() {
                 try {
-                  return Promise.resolve(
-                    setState(
-                      e.call(
-                        seal({
-                          effects: this._effects,
-                          props: this.props,
-                          resetState: this._resetState,
-                          state: writableState,
-                        }),
-                        this._effects,
-                        ...args
-                      )
-                    )
+                  return Promise.resolve(effect.apply(store, arguments)).then(
+                    noop
                   );
                 } catch (error) {
                   return Promise.reject(error);
                 }
-              };
+              },
+            };
+          });
+          wrappedEffects = seal(create(null, descriptors));
 
-              // this special effects are not callable manually and not inheritable
-              if (k === "initialize" || k === "finalize") {
-                this[k] = wrappedEffect;
-              } else {
-                effectsDescriptors[k] = {
-                  enumerable: true,
-                  value: wrappedEffect,
-                };
+          const stateProxyDescriptors = {};
+          stateKeys.forEach(key => {
+            stateProxyDescriptors[key] = {
+              get: () => state[key],
+              set: value => {
+                state[key] = value;
+                this.forceUpdate();
+              },
+            };
+          });
+
+          const store = seal(
+            defineProperty(
+              {
+                effects: wrappedEffects,
+                resetState,
+                state: seal(create(stateProxy, stateProxyDescriptors)),
+              },
+              "props",
+              {
+                get: () => this.props,
               }
-            });
-          }
-          this._effects = seal(create(parentEffects, effectsDescriptors));
+            )
+          );
         }
 
-        _unsubscribe = noop;
-
-        componentDidMount() {
-          const parent = this.context[TAG];
-          if (parent !== undefined) {
-            this._unsubscribe = parent.subscribe(this._dispatch);
-          }
-
-          const { initialize } = this;
-          if (initialize !== undefined) {
-            initialize();
-          }
-        }
-
-        componentDidUpdate() {
-          this._dispatch();
-        }
-
-        componentWillUnmount() {
-          const { finalize } = this;
-          if (finalize !== undefined) {
-            finalize();
-          }
-
-          this._unsubscribe();
-          this._unsubscribe = noop;
-        }
-
-        getChildContext() {
-          return {
-            [TAG]: {
-              effects: this._effects,
-              resetState: this._resetState,
-              state: this._state,
-              stateKeys: this._stateKeys,
-              subscribe: this._subscribe,
-            },
-          };
-        }
-
-        render() {
-          return createElement(ChildComponent, this.props);
-        }
+        this._store = seal({
+          effects: wrappedEffects,
+          resetState,
+          state: stateProxy,
+        });
       }
 
-      if (ChildComponent === undefined) {
-        const stateProvider = new StateProvider({}, {});
-        return {
-          getState: () => stateProvider._state,
-          effects: stateProvider._effects,
-        };
+      render() {
+        return fn(this._store, this.props);
       }
-      return StateProvider;
     };
-    return wrapComponentWithState;
-  };
-
-  return { injectState, provideState };
+  }
+  return { withStore };
 };

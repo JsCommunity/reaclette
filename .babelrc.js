@@ -8,8 +8,8 @@ const __PROD__ = NODE_ENV === "production";
 const __TEST__ = NODE_ENV === "test";
 
 const configs = {
-  "@babel/plugin-proposal-decorators": {
-    legacy: true,
+  "@babel/plugin-proposal-pipeline-operator": {
+    proposal: "minimal",
   },
   "@babel/preset-env"(pkg) {
     return {
@@ -17,14 +17,20 @@ const configs = {
       loose: true,
       shippedProposals: true,
       targets: (() => {
+        const targets = {};
+        const browers = pkg.browserslist;
+        if (browers !== undefined) {
+          targets.browsers = browers;
+        }
         let node = (pkg.engines || {}).node;
         if (node !== undefined) {
           const trimChars = "^=>~";
           while (trimChars.includes(node[0])) {
             node = node.slice(1);
           }
-          return { node: node };
+          targets.node = node;
         }
+        return { browsers: pkg.browserslist, node };
       })(),
       useBuiltIns: "@babel/polyfill" in (pkg.dependencies || {}) && "usage",
     };
