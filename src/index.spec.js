@@ -9,7 +9,11 @@ const { injectState, provideState } = require('./')
 configure({ adapter: new (require('enzyme-adapter-react-16'))() })
 
 const makeTestInstance = (opts, props) => {
-  const Child = () => null
+  let renderCount = 0
+  const Child = () => {
+    ++renderCount
+    return null
+  }
   const parent = mount(createElement(provideState({
     ...opts,
     effects: {
@@ -23,6 +27,7 @@ const makeTestInstance = (opts, props) => {
     getInjectedState: () => child.prop('state'),
     getParentState: () => parent.instance()._state,
     getParentProps: () => parent.instance().props,
+    getRenderCount: () => renderCount,
     setParentProps: parent.setProps.bind(parent),
   }
 }
@@ -81,6 +86,25 @@ describe('provideState', () => {
       return effects.foo().then(value => {
         expect(value).toBe(undefined)
       })
+    })
+
+    it('sync state changes are batched', async () => {
+      const { effects, getInjectedState, getRenderCount } = makeTestInstance({
+        initialState: () => ({ foo: 0 }),
+        effects: { foo () {
+          this.state.foo = 1
+          this.state.foo = 2
+        } },
+      })
+
+      expect(getRenderCount()).toBe(1)
+
+      // access this state to make sure children is rerendered when it changes
+      expect(getInjectedState().foo).toBe(0)
+
+      await effects.foo()
+
+      expect(getRenderCount()).toBe(2)
     })
   })
 
