@@ -1,7 +1,7 @@
-import { BaseError } from "make-error";
+const { BaseError } = require("make-error");
 
-export default class CircularComputedError extends BaseError {
+module.exports = class CircularComputedError extends BaseError {
   constructor(name) {
     super(`computed "${name}" cannot depend on itself`);
   }
-}
+};
