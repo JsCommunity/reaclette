@@ -123,5 +123,40 @@ describe('provideState', () => {
       expect(getInjectedState().sum).toBe(6)
       expect(sum).toHaveBeenCalledTimes(3)
     })
+
+    it('can returns a promise', async () => {
+      let promise, resolve
+      const reset = () => {
+        // eslint-disable-next-line promise/param-names
+        promise = new Promise(resolve_ => {
+          resolve = resolve_
+        })
+      }
+      reset()
+
+      const { getInjectedState, setParentProps } = makeTestInstance({
+        computed: { value: (_, { foo }) => promise },
+      }, { foo: 1 })
+
+      // trigger a first computation
+      expect(getInjectedState().value).toBe(undefined)
+
+      const prevPromise = promise
+      const prevResolve = resolve
+
+      // trigger a second computation
+      reset()
+      setParentProps({ foo: 2 })
+      expect(getInjectedState().value).toBe(undefined)
+
+      // resolve them in reverse order
+      resolve('bar')
+      await promise
+      prevResolve('foo')
+      await prevPromise
+
+      // the last computation should win
+      expect(getInjectedState().value).toBe('bar')
+    })
   })
 })
