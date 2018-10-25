@@ -368,7 +368,7 @@ describe("my app state", () => {
 
 ## Contributions
 
-Contributions are _very_ welcomed, either on the documentation or on
+Contributions are _very_ welcomed, either to the documentation or to
 the code.
 
 You may:
