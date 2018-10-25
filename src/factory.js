@@ -202,22 +202,21 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           let effectsDescriptors
           if (effects !== undefined) {
             const setState = newState => {
-              if (newState != null) {
-                const { then } = newState
-                if (typeof then === 'function') {
-                  return then.call(newState, setState)
-                }
-                state = { ...state, ...newState }
-                dispatch()
+              if (newState == null) {
+                return
               }
-            }
-            const handleStateUpdater = updater => {
-              if (updater !== undefined) {
-                const { then } = updater
-                return typeof then === 'function'
-                  ? then.call(updater, handleStateUpdater)
-                  : setState(updater(completeState, this.props))
+
+              if (typeof newState === 'function') {
+                return setState(newState(completeState, this.props))
               }
+
+              const { then } = newState
+              if (typeof then === 'function') {
+                return then.call(newState, setState)
+              }
+
+              state = { ...state, ...newState }
+              dispatch()
             }
 
             effectsDescriptors = create(null)
@@ -225,7 +224,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               const e = effects[k]
               const wrappedEffect = (...args) => {
                 try {
-                  return Promise.resolve(handleStateUpdater(e.call({
+                  return Promise.resolve(setState(e.call({
                     effects: this._effects,
                     props: this.props,
                     state: completeState,
