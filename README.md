@@ -63,7 +63,7 @@ import { provideState, injectState } from "reaclette";
 
 Create a decorator that associates a React component with a store.
 
-`options` is an object which can contains the following properties.
+`options` is an object which can contain the following properties.
 
 #### `initialState(props) => object`
 
