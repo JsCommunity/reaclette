@@ -77,7 +77,7 @@ This function returns the initial state of store, which can be computed from the
 
 #### `effects: { [string]: Effect }`
 
-These functions which can be called from application code (see `injectState`) and can do side-effects and/or mutate the state.
+These functions can be called from application code (see `injectState`) and can do side-effects and/or mutate the state.
 
 When called, an effect is provided with one or more arguments: a reference to other effects and any arguments passed to the effect from the application code.
 
