@@ -86,7 +86,7 @@ An effect can return:
 1. nothing (`undefined` or `null`)
 2. an object containing new properties to merge in the state
 3. a promise resolving to one of the above
-4. a function which receive the state and the props and returns one of the above
+4. a function which receives the state and the props then returns one of the above
 
 ```js
 {
