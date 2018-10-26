@@ -124,6 +124,11 @@ provideState({
 });
 ```
 
+There are two special effects:
+
+- `initialize`: automatically called just after the component is mounted;
+- `finalize`: automatically called just before the component is unmounted.
+
 #### `computed: { [string]: Compute }`
 
 _Computeds_ are lazy values derived from the state and the properties of the decorated component.
