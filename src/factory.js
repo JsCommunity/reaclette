@@ -39,7 +39,7 @@ const defaultEffects = {
       ? target.checked
       : target.value,
   }),
-  toggleState: (_, { target: { name } }) => state => ({ [name]: !state[name] }),
+  toggleState: (_, { currentTarget: { name } }) => state => ({ [name]: !state[name] }),
 }
 
 defaultEffects.linkState.trim = (_, { target }) => state => {
