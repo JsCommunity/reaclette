@@ -97,7 +97,7 @@ An effect can return:
 }
 ```
 
-Effects can also access effects, state (read and write) and props via `this`, which is extremely
+Effects can also access effects, state (read and write) and props (at the time the effect was called) via `this`, which is extremely
 handy for async effects:
 
 ```js
