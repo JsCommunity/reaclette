@@ -43,7 +43,8 @@ const Parent = wrapComponentWithState(() => <Child />);
 
 const Child = injectState(({ effects, state }) => (
   <div>
-    <p>Out counter is at: {state.counter}</p>
+    <p>Our counter is at: {state.counter}</p>
+    <p>Its squared value is: {state.square}</p>
     <p>
       <button onClick={effects.addOne}>Add one</button>
     </p>
