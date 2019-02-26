@@ -193,6 +193,15 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           ))
           const completeStateKeys = (this._stateKeys = keys(stateDescriptors))
 
+          const resetState = () => {
+            const _initialstate = initialState(props)
+            keys(_initialstate).forEach(k => {
+              if (k in stateDescriptors) {
+                this._state[k] = _initialstate[k]
+              }
+            })
+          }
+
           parentStateKeys.forEach(k => {
             if (!(k in stateDescriptors)) {
               completeStateKeys.push(k)
@@ -227,6 +236,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                   return Promise.resolve(setState(e.call({
                     effects: this._effects,
                     props: this.props,
+                    resetState,
                     state: completeState,
                   }, this._effects, ...args)))
                 } catch (error) {
