@@ -50,6 +50,33 @@ describe('provideState', () => {
     })
   })
 
+  describe('resetState', () => {
+    it('is called to reset the state to its initial values', () => {
+      const props = { bar: 'baz' }
+      const { effects, getInjectedState } = makeTestInstance(
+        {
+          initialState: () => ({
+            foo: 'bar',
+          }),
+          effects: {
+            changeState (_, value) {
+              return { foo: value }
+            },
+            reset () {
+              this.resetState()
+            },
+          },
+        },
+        props
+      )
+      effects.changeState('foo').then(value => {
+        expect(value).toBe('foo')
+      })
+      effects.reset()
+      expect(getInjectedState()).toEqual({ foo: 'bar' })
+    })
+  })
+
   describe('effects', () => {
     it('are called with other effects followed by arguments', () => {
       const args = ['bar', 'baz']
