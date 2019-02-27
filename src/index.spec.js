@@ -71,9 +71,10 @@ describe('provideState', () => {
       )
       effects.changeState('foo').then(value => {
         expect(value).toBe('foo')
+        effects.reset().then(() => {
+          expect(getInjectedState()).toEqual({ foo: 'bar' })
+        })
       })
-      effects.reset()
-      expect(getInjectedState()).toEqual({ foo: 'bar' })
     })
   })
 
