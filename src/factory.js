@@ -81,6 +81,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
         return createElement(ChildComponent, {
           ...this.props,
           effects: this.context[TAG].effects,
+          resetState: this.context[TAG].resetState,
           state: this._stateProxy,
         })
       }
@@ -193,7 +194,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           ))
           const completeStateKeys = (this._stateKeys = keys(stateDescriptors))
 
-          const resetState = () => {
+          this._resetState = () => {
             const _initialstate = initialState(props)
             keys(_initialstate).forEach(k => {
               if (k in stateDescriptors) {
@@ -236,7 +237,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                   return Promise.resolve(setState(e.call({
                     effects: this._effects,
                     props: this.props,
-                    resetState,
+                    resetState: this._resetState,
                     state: completeState,
                   }, this._effects, ...args)))
                 } catch (error) {
@@ -290,6 +291,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           return {
             [TAG]: {
               effects: this._effects,
+              resetState: this._resetState,
               state: this._state,
               stateKeys: this._stateKeys,
               subscribe: this._subscribe,
