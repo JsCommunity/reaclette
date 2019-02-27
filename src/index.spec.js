@@ -51,7 +51,7 @@ describe('provideState', () => {
   })
 
   describe('resetState', () => {
-    it('is called to reset the state to its initial values', () => {
+    it('is called to reset the state to its initial values', async () => {
       const props = { bar: 'baz' }
       const { effects, getInjectedState } = makeTestInstance(
         {
@@ -69,12 +69,10 @@ describe('provideState', () => {
         },
         props
       )
-      effects.changeState('foo').then(value => {
-        expect(value).toBe('foo')
-        effects.reset().then(() => {
-          expect(getInjectedState()).toEqual({ foo: 'bar' })
-        })
-      })
+      await effects.changeState('foo')
+      expect(getInjectedState()).toEqual({ foo: 'foo' })
+      await effects.reset()
+      expect(getInjectedState()).toEqual({ foo: 'bar' })
     })
   })
 
