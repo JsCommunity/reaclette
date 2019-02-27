@@ -194,9 +194,10 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           ))
           const completeStateKeys = (this._stateKeys = keys(stateDescriptors))
 
-          this._resetState = async () => {
+          this._resetState = () => {
             state = initialState(this.props)
             dispatch()
+            return Promise.resolve()
           }
 
           parentStateKeys.forEach(k => {
