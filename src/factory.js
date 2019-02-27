@@ -195,7 +195,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           const completeStateKeys = (this._stateKeys = keys(stateDescriptors))
 
           this._resetState = () => {
-            const _initialstate = initialState(props)
+            const _initialstate = initialState(this.props)
             keys(_initialstate).forEach(k => {
               if (k in stateDescriptors) {
                 this._state[k] = _initialstate[k]
