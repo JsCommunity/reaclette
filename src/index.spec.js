@@ -28,6 +28,7 @@ const makeTestInstance = (opts, props) => {
     getParentState: () => parent.instance()._state,
     getParentProps: () => parent.instance().props,
     getRenderCount: () => renderCount,
+    resetState: child.prop('resetState'),
     setParentProps: parent.setProps.bind(parent),
   }
 }
@@ -47,6 +48,54 @@ describe('provideState', () => {
         },
         props
       ).getInjectedState()).toEqual({ foo: 'bar' })
+    })
+  })
+
+  describe('resetState', () => {
+    it('is called to reset the state to its initial values in effects', async () => {
+      const props = { bar: 'baz' }
+      const { effects, getInjectedState } = makeTestInstance(
+        {
+          initialState: () => ({
+            foo: 'bar',
+          }),
+          effects: {
+            changeState (_, value) {
+              return { foo: value }
+            },
+            async reset () {
+              await this.resetState()
+            },
+          },
+        },
+        props
+      )
+      await effects.changeState('foo')
+      expect(getInjectedState()).toEqual({ foo: 'foo' })
+      await effects.reset()
+      expect(getInjectedState()).toEqual({ foo: 'bar' })
+    })
+
+    it('is called to reset the state to its initial values in child', async () => {
+      const props = { bar: 'baz' }
+      const { effects, getInjectedState, resetState } = makeTestInstance(
+        {
+          initialState: () => ({
+            foo: 'bar',
+          }),
+          effects: {
+            changeState (_, value) {
+              return { foo: value }
+            },
+          },
+        },
+        props
+      )
+
+      await effects.changeState('foo')
+      expect(getInjectedState()).toEqual({ foo: 'foo' })
+      await resetState()
+      expect(getInjectedState()).toEqual({ foo: 'bar' })
     })
   })
 
