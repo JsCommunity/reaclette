@@ -62,8 +62,8 @@ describe('provideState', () => {
             changeState (_, value) {
               return { foo: value }
             },
-            reset () {
-              this.resetState()
+            async reset () {
+              await this.resetState()
             },
           },
         },
