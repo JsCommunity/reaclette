@@ -145,7 +145,13 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
                   propsSpy.clear()
                   stateSpy.clear()
-                  previousValue = c(stateProxy, propsProxy)
+
+                  try {
+                    previousValue = c(stateProxy, propsProxy)
+                  } catch (error) {
+                    noop()
+                  }
+
                   if (!isPromise(previousValue)) {
                     return previousValue
                   }
