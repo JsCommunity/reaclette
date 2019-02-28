@@ -11,6 +11,7 @@ const makeSpy = (keys, accessor) => {
   const spy = new Map()
   keys.forEach(k => {
     descriptors[k] = {
+      configurable: true,
       enumerable: true,
       get: () => {
         let v = spy.get(k)
@@ -131,6 +132,12 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                       completeStateKeys,
                       stateAccessor
                     )
+                    Object.defineProperty(stateProxy, k, {
+                      enumerable: true,
+                      get () {
+                        throw new Error('cannot access computed from itself')
+                      },
+                    })
                   } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
                     return isPromise(previousValue) ? undefined : previousValue
                   }
