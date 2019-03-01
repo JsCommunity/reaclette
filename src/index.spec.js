@@ -1,5 +1,5 @@
 /* eslint-env jest */
-import { ComputedError } from './reaclette-errors'
+import CircularComputedError from './_CircularComputedError'
 
 require('raf/polyfill')
 const { createElement } = require('react')
@@ -203,7 +203,7 @@ describe('provideState', () => {
     it('throws when a computed calls its self', () => {
       expect(() => {
         return getInjectedState().circularComputed
-      }).toThrowError(new ComputedError('computed "circularComputed" cannot depend on itself'))
+      }).toThrowError(new CircularComputedError('circularComputed'))
     })
 
     it('can returns a promise', async () => {

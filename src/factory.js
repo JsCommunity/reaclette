@@ -1,4 +1,4 @@
-import { ComputedError } from './reaclette-errors'
+import CircularComputedError from './_CircularComputedError'
 
 // React does not support symbols :/
 const TAG = 'reaclette'
@@ -137,7 +137,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                     Object.defineProperty(stateProxy, k, {
                       enumerable: true,
                       get () {
-                        throw new ComputedError(`computed "${k}" cannot depend on itself`)
+                        throw new CircularComputedError(k)
                       },
                     })
                   } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
@@ -149,7 +149,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                   try {
                     previousValue = c(stateProxy, propsProxy)
                   } catch (error) {
-                    if (error instanceof ComputedError) {
+                    if (error instanceof CircularComputedError) {
                       throw error
                     }
                     noop()
