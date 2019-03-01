@@ -1,3 +1,5 @@
+import { ComputedError } from './reaclette-errors'
+
 // React does not support symbols :/
 const TAG = 'reaclette'
 
@@ -135,7 +137,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                     Object.defineProperty(stateProxy, k, {
                       enumerable: true,
                       get () {
-                        throw new Error(`computed "${k}" cannot depend on itself`)
+                        throw new ComputedError(`computed "${k}" cannot depend on itself`)
                       },
                     })
                   } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
@@ -144,7 +146,14 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
                   propsSpy.clear()
                   stateSpy.clear()
-                  previousValue = c(stateProxy, propsProxy)
+                  try {
+                    previousValue = c(stateProxy, propsProxy)
+                  } catch (error) {
+                    if (error instanceof ComputedError) {
+                      throw error
+                    }
+                    noop()
+                  }
                   if (!isPromise(previousValue)) {
                     return previousValue
                   }
