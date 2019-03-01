@@ -188,6 +188,34 @@ Even though computed can use state and props, they don't have to:
 
 Makes
 
+#### `resetState()`
+
+This function resets the state by calling `initialState` with the current properties of the decorated component.
+
+> It is very similar to an effect in that it update the state and returns a promise.
+
+This pseudo-effect is passed as a property by `injectState`:
+
+```js
+const Component = injectState({ effects, state, resetState }) => (
+  <form onReset={resetState}>
+    // ...
+  </form>
+)
+```
+
+And also available from effects via their context:
+
+```js
+const withState = provideState({
+  // ...
+  effects: {
+    async myEffect () {
+       await this.resetState()
+    }
+})
+```
+
 ## Recipes
 
 ### Usage with PReact
