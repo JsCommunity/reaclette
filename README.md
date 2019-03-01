@@ -188,6 +188,50 @@ Even though computed can use state and props, they don't have to:
 
 Makes
 
+#### `resetState()`
+
+You may want to re-initialize the state of a particular component. For example, reset all of the inputs in a form to their initial values.
+
+There's two ways to do it:
+
+1. Using injected pseudo-effect `resetState` in component:
+
+```js
+const App = provideState({
+  initialState: () => ({
+    name: ''
+  }),
+  effects: {
+    handleName(_, { target: { value }}) {
+     return { name: value }
+    }
+  }
+})(injectState(({ effects, state, resetState }) => (
+  <form onReset={resetState}>
+    <input onChange={effects.handleName} value={state.name} />
+  </form>
+)))
+```
+
+2. Using injected pseud-effect `resetState` in effects:
+
+```js
+const App = provideState({
+  initialState: () => ({
+    remainingLives: 10
+  }),
+  effects: {
+    async restartGame() {
+      // Some other operations
+      // ...
+      await this.resetState()
+    }
+  }
+})(injectState(({ effects, state }) => (
+  <button onClick={effects.restartGame} >Restart game</button>
+)))
+```
+
 ## Recipes
 
 ### Usage with PReact
