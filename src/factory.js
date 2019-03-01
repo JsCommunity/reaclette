@@ -135,7 +135,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                     Object.defineProperty(stateProxy, k, {
                       enumerable: true,
                       get () {
-                        throw new Error(`computed: ${k}, cannot access computed from itself`)
+                        throw new Error(`computed "${k}" cannot depend on itself`)
                       },
                     })
                   } else if (propsSpy.upToDate() && stateSpy.upToDate()) {

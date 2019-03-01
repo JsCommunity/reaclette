@@ -159,7 +159,7 @@ describe('provideState', () => {
 
   describe('computed', () => {
     const sum = jest.fn(({ foo }, { bar }) => foo + bar)
-    const circularComputed = jest.fn(({ circularComputed }, { bar }) => circularComputed + bar)
+    const circularComputed = jest.fn(({ circularComputed }) => {})
     const { effects, getInjectedState, setParentProps } = makeTestInstance({
       initialState: () => ({ foo: 1, qux: 2 }),
       computed: {
@@ -202,7 +202,7 @@ describe('provideState', () => {
     it('throws when a computed calls its self', () => {
       expect(() => {
         return getInjectedState().circularComputed
-      }).toThrowError(new Error('computed: circularComputed, cannot access computed from itself'))
+      }).toThrowError(new Error('computed "circularComputed" cannot depend on itself'))
     })
 
     it('can returns a promise', async () => {
