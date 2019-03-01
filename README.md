@@ -190,46 +190,30 @@ Makes
 
 #### `resetState()`
 
-You may want to re-initialize the state of a particular component. For example, reset all of the inputs in a form to their initial values.
+This function resets the state by calling `initialState` with the current properties of the decorated component.
 
-There's two ways to do it:
+> It is very similar to an effect in that it update the state and returns a promise.
 
-1. Using injected pseudo-effect `resetState` in component:
+This pseudo-effect is passed as a property by `injectState`:
 
 ```js
-const App = provideState({
-  initialState: () => ({
-    name: ''
-  }),
-  effects: {
-    handleName(_, { target: { value }}) {
-     return { name: value }
-    }
-  }
-})(injectState(({ effects, state, resetState }) => (
+const Component = injectState({ effects, state, resetState }) => (
   <form onReset={resetState}>
-    <input onChange={effects.handleName} value={state.name} />
+    // ...
   </form>
-)))
+)
 ```
 
-2. Using injected pseud-effect `resetState` in effects:
+And also available from effects via their context:
 
 ```js
-const App = provideState({
-  initialState: () => ({
-    remainingLives: 10
-  }),
+const withState = provideState({
+  // ...
   effects: {
-    async restartGame() {
-      // Some other operations
-      // ...
-      await this.resetState()
+    async myEffect () {
+       await this.resetState()
     }
-  }
-})(injectState(({ effects, state }) => (
-  <button onClick={effects.restartGame} >Restart game</button>
-)))
+})
 ```
 
 ## Recipes
