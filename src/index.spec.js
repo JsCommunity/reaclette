@@ -1,4 +1,5 @@
 /* eslint-env jest */
+import CircularComputedError from './_CircularComputedError'
 
 require('raf/polyfill')
 const { createElement } = require('react')
@@ -159,10 +160,12 @@ describe('provideState', () => {
 
   describe('computed', () => {
     const sum = jest.fn(({ foo }, { bar }) => foo + bar)
+    const circularComputed = jest.fn(({ circularComputed }) => {})
     const { effects, getInjectedState, setParentProps } = makeTestInstance({
       initialState: () => ({ foo: 1, qux: 2 }),
       computed: {
         sum,
+        circularComputed,
       },
     }, { bar: 3, baz: 4 })
 
@@ -195,6 +198,12 @@ describe('provideState', () => {
       setParentProps({ bar: 4 })
       expect(getInjectedState().sum).toBe(6)
       expect(sum).toHaveBeenCalledTimes(3)
+    })
+
+    it('throws when a computed calls its self', () => {
+      expect(() => {
+        return getInjectedState().circularComputed
+      }).toThrowError(new CircularComputedError('circularComputed'))
     })
 
     it('can returns a promise', async () => {

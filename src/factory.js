@@ -1,3 +1,5 @@
+import CircularComputedError from './_CircularComputedError'
+
 // React does not support symbols :/
 const TAG = 'reaclette'
 
@@ -128,9 +130,15 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                   if (propsProxy === undefined) {
                     [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
                     [stateProxy, stateSpy] = makeSpy(
-                      completeStateKeys,
+                      completeStateKeys.filter(key => key !== k),
                       stateAccessor
                     )
+
+                    Object.defineProperty(stateProxy, k, {
+                      get () {
+                        throw new CircularComputedError(k)
+                      },
+                    })
                   } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
                     return isPromise(previousValue) ? undefined : previousValue
                   }
