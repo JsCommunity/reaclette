@@ -135,7 +135,6 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                       stateAccessor
                     )
                     Object.defineProperty(stateProxy, k, {
-                      enumerable: false,
                       get () {
                         throw new CircularComputedError(k)
                       },
