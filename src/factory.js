@@ -13,7 +13,7 @@ const makeSpy = (keys, accessor) => {
   const spy = new Map()
   keys.forEach(k => {
     descriptors[k] = {
-      configurable: true,
+      configurable: false,
       enumerable: true,
       get: () => {
         let v = spy.get(k)
