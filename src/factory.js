@@ -129,12 +129,15 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               stateDescriptors[k] = {
                 get: () => {
                   if (propsProxy === undefined) {
+                    const _completeStateKeys = completeStateKeys.filter(key => key !== k);
                     [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
                     [stateProxy, stateSpy] = makeSpy(
-                      completeStateKeys,
+                      _completeStateKeys,
                       stateAccessor
                     )
+
                     Object.defineProperty(stateProxy, k, {
+                      enumerable: false,
                       get () {
                         throw new CircularComputedError(k)
                       },
