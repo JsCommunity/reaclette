@@ -13,7 +13,6 @@ const makeSpy = (keys, accessor) => {
   const spy = new Map()
   keys.forEach(k => {
     descriptors[k] = {
-      configurable: false,
       enumerable: true,
       get: () => {
         let v = spy.get(k)
@@ -129,15 +128,13 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               stateDescriptors[k] = {
                 get: () => {
                   if (propsProxy === undefined) {
-                    const _completeStateKeys = completeStateKeys.filter(key => key !== k);
                     [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
                     [stateProxy, stateSpy] = makeSpy(
-                      _completeStateKeys,
+                      completeStateKeys.filter(key => key !== k),
                       stateAccessor
                     )
 
                     Object.defineProperty(stateProxy, k, {
-                      enumerable: false,
                       get () {
                         throw new CircularComputedError(k)
                       },
