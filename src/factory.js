@@ -146,14 +146,8 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
                   propsSpy.clear()
                   stateSpy.clear()
-                  try {
-                    previousValue = c(stateProxy, propsProxy)
-                  } catch (error) {
-                    if (error instanceof CircularComputedError) {
-                      throw error
-                    }
-                    noop()
-                  }
+
+                  previousValue = c(stateProxy, propsProxy)
                   if (!isPromise(previousValue)) {
                     return previousValue
                   }
