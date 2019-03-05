@@ -161,11 +161,15 @@ describe('provideState', () => {
   describe('computed', () => {
     const sum = jest.fn(({ foo }, { bar }) => foo + bar)
     const circularComputed = jest.fn(({ circularComputed }) => {})
+    const throwComputed = jest.fn(() => {
+      throw new Error()
+    })
     const { effects, getInjectedState, setParentProps } = makeTestInstance({
       initialState: () => ({ foo: 1, qux: 2 }),
       computed: {
         sum,
         circularComputed,
+        throwComputed,
       },
     }, { bar: 3, baz: 4 })
 
@@ -204,6 +208,13 @@ describe('provideState', () => {
       expect(() => {
         return getInjectedState().circularComputed
       }).toThrowError(new CircularComputedError('circularComputed'))
+    })
+
+    it('does not trigger a render when a computed throws', () => {
+      const previousState = { ...getInjectedState() }
+      const res = getInjectedState().throwComputed
+      expect(res).toBe(undefined)
+      expect(getInjectedState()).toEqual(previousState)
     })
 
     it('can returns a promise', async () => {

@@ -152,7 +152,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                     if (error instanceof CircularComputedError) {
                       throw error
                     }
-                    console.log(error)
+                    console.log(`computed "${k}" throwed`, error)
                     // as per #21,  keep the previous value in case of error
                   }
 
