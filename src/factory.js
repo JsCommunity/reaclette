@@ -152,7 +152,8 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                     if (error instanceof CircularComputedError) {
                       throw error
                     }
-                    // The fact that the error is catched here, it doesn't update computed state, so no rendering will be triggered and the computed keeps its previous state
+                    console.log(error)
+                    // as per #21,  keep the previous value in case of error
                   }
 
                   if (!isPromise(previousValue)) {
