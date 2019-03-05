@@ -149,7 +149,10 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                   try {
                     previousValue = c(stateProxy, propsProxy)
                   } catch (error) {
-                    // The fact that the error is catched here, it doesn't update computed's state, so no rendering will be triggered and the computed keeps its previous state
+                    if (error instanceof CircularComputedError) {
+                      throw error
+                    }
+                    // The fact that the error is catched here, it doesn't update computed state, so no rendering will be triggered and the computed keeps its previous state
                   }
 
                   if (!isPromise(previousValue)) {
