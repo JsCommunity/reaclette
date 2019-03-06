@@ -213,13 +213,13 @@ describe('provideState', () => {
       }).toThrowError(new CircularComputedError('circularComputed'))
     })
 
-    it('does not trigger a render when a computed throws', () => {
-      // a computed that throws on the first call is visible as undefined in the state
+    it('returns undefined when a computed throws on the first call', () => {
       setParentProps({ baz: 21 })
       const res = getInjectedState().throwComputed
       expect(res).toBe(undefined)
+    })
 
-      // a computed that returns a value and then throws is visible as the previous value
+    it('returns previous value when a computed throws', () => {
       setParentProps({ baz: 5 })
       expect(getInjectedState().throwComputed).toBe(10)
       setParentProps({ baz: 21 })
