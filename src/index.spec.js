@@ -161,8 +161,11 @@ describe('provideState', () => {
   describe('computed', () => {
     const sum = jest.fn(({ foo }, { bar }) => foo + bar)
     const circularComputed = jest.fn(({ circularComputed }) => {})
-    const throwComputed = jest.fn(() => {
-      throw new Error()
+    const throwComputed = jest.fn((_, { baz }) => {
+      if (baz > 20) {
+        throw new Error('Not supported value')
+      }
+      return baz * 2
     })
     const { effects, getInjectedState, setParentProps } = makeTestInstance({
       initialState: () => ({ foo: 1, qux: 2 }),
@@ -211,10 +214,16 @@ describe('provideState', () => {
     })
 
     it('does not trigger a render when a computed throws', () => {
-      const previousState = { ...getInjectedState() }
+      // a computed that throws on the first call is visible as undefined in the state
+      setParentProps({ baz: 21 })
       const res = getInjectedState().throwComputed
       expect(res).toBe(undefined)
-      expect(getInjectedState()).toEqual(previousState)
+
+      // a computed that returns a value and then throws is visible as the previous value
+      setParentProps({ baz: 5 })
+      expect(getInjectedState().throwComputed).toBe(10)
+      setParentProps({ baz: 21 })
+      expect(getInjectedState().throwComputed).toBe(10)
     })
 
     it('can returns a promise', async () => {

@@ -153,7 +153,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                       throw error
                     }
                     console.warn(`computed "${k}" thrown`, error)
-                    // as per #21,  keep the previous value in case of error
+                    // as per #21, keep the previous value in case of error
                   }
 
                   if (!isPromise(previousValue)) {
