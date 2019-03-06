@@ -161,11 +161,18 @@ describe('provideState', () => {
   describe('computed', () => {
     const sum = jest.fn(({ foo }, { bar }) => foo + bar)
     const circularComputed = jest.fn(({ circularComputed }) => {})
+    const throwComputed = jest.fn((_, { baz }) => {
+      if (baz > 20) {
+        throw new Error('Not supported value')
+      }
+      return baz * 2
+    })
     const { effects, getInjectedState, setParentProps } = makeTestInstance({
       initialState: () => ({ foo: 1, qux: 2 }),
       computed: {
         sum,
         circularComputed,
+        throwComputed,
       },
     }, { bar: 3, baz: 4 })
 
@@ -204,6 +211,19 @@ describe('provideState', () => {
       expect(() => {
         return getInjectedState().circularComputed
       }).toThrowError(new CircularComputedError('circularComputed'))
+    })
+
+    it('returns undefined when a computed throws on the first call', () => {
+      setParentProps({ baz: 21 })
+      const res = getInjectedState().throwComputed
+      expect(res).toBe(undefined)
+    })
+
+    it('returns previous value when a computed throws', () => {
+      setParentProps({ baz: 5 })
+      expect(getInjectedState().throwComputed).toBe(10)
+      setParentProps({ baz: 21 })
+      expect(getInjectedState().throwComputed).toBe(10)
     })
 
     it('can returns a promise', async () => {
