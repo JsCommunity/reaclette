@@ -1,4 +1,6 @@
-# reaclette [![Build Status](https://travis-ci.org/JsCommunity/reaclette.png?branch=master)](https://travis-ci.org/JsCommunity/reaclette)
+# reaclette
+
+[![Package Version](https://badgen.net/npm/v/reaclette)](https://npmjs.org/package/reaclette) [![Build Status](https://travis-ci.org/JsCommunity/reaclette.png?branch=master)](https://travis-ci.org/JsCommunity/reaclette) [![BundlePhobia](https://badgen.net/bundlephobia/minzip/reaclette)](https://bundlephobia.com/result?p=reaclette) [![Latest Commit](https://badgen.net/github/last-commit/JsCommunity/reaclette)](https://github.com/JsCommunity/reaclette/commits/master)
 
 > Inspired by Freactal, but better :wink:
 
