@@ -238,6 +238,13 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 return then.call(newState, setState);
               }
 
+              Object.keys(newState).forEach(key => {
+                if (!(key in state)) {
+                  throw new Error(
+                    `"${key}" is not a valid state entry. If you want to use it, initialize it in "intialState"`
+                  );
+                }
+              });
               state = { ...state, ...newState };
               dispatch();
             };
