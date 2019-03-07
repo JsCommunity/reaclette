@@ -1,4 +1,4 @@
-# reaclette [![Build Status](https://travis-ci.org/julien-f/reaclette.png?branch=master)](https://travis-ci.org/julien-f/reaclette)
+# reaclette [![Build Status](https://travis-ci.org/JsCommunity/reaclette.png?branch=master)](https://travis-ci.org/JsCommunity/reaclette)
 
 > Inspired by Freactal, but better :wink:
 
@@ -409,7 +409,7 @@ the code.
 
 You may:
 
-- report any [issue](https://github.com/julien-f/reaclette/issues)
+- report any [issue](https://github.com/JsCommunity/reaclette/issues)
   you've encountered;
 - fork and create a pull request.
 
