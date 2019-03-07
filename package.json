@@ -43,6 +43,7 @@
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.0.5",
     "eslint": "^5.0.1",
+    "eslint-config-prettier": "^4.1.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^8.0.1",
@@ -50,6 +51,8 @@
     "eslint-plugin-standard": "^4.0.0",
     "husky": "^1.1.2",
     "jest": "^24.1.0",
+    "lint-staged": "^8.1.5",
+    "prettier": "^1.16.4",
     "raf": "^3.4.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
@@ -63,11 +66,16 @@
     "clean": "rimraf dist/",
     "dev": "cross-env NODE_ENV=development babel --watch --source-maps --out-dir=dist/ src/",
     "dev-test": "jest --bail --watch",
-    "prebuild": "yarn run clean",
-    "predev": "yarn run prebuild",
-    "prepublishOnly": "yarn run build",
+    "prebuild": "npm run clean",
+    "predev": "npm run prebuild",
+    "prepublishOnly": "npm run build",
     "pretest": "eslint --ignore-path .gitignore src/",
     "test": "jest"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "jest": {
     "collectCoverage": true,
@@ -76,9 +84,12 @@
     ],
     "testRegex": "\\.spec\\.js$"
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "yarn test"
-    }
+  "lint-staged": {
+    "*.js": [
+      "prettier --write",
+      "git add",
+      "eslint --ignore-pattern '!*'",
+      "jest --findRelatedTests --passWithNoTests"
+    ]
   }
 }

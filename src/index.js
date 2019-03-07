@@ -1,1 +1,1 @@
-module.exports = require('./factory')(require('react'))
+module.exports = require("./factory")(require("react"));
