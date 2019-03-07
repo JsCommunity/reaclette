@@ -145,6 +145,26 @@ describe("provideState", () => {
       });
     });
 
+    it("throws if an invalid state entry is assigned", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({
+          corge: "qux",
+        }),
+        effects: {
+          foo() {
+            return { qux: 3 };
+          },
+        },
+      });
+      return effects.foo().catch(error => {
+        expect(error).toEqual(
+          new Error(
+            '"qux" is not a valid state entry. If you want to use it, initialize it in "intialState"'
+          )
+        );
+      });
+    });
+
     it("sync state changes are batched", async () => {
       const { effects, getInjectedState, getRenderCount } = makeTestInstance({
         initialState: () => ({ foo: 0 }),
