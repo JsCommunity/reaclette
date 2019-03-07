@@ -4,11 +4,11 @@
   "license": "ISC",
   "description": "",
   "keywords": [],
-  "homepage": "https://github.com/julien-f/reaclette",
-  "bugs": "https://github.com/julien-f/reaclette/issues",
+  "homepage": "https://github.com/JsCommunity/reaclette",
+  "bugs": "https://github.com/JsCommunity/reaclette/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julien-f/reaclette"
+    "url": "https://github.com/JsCommunity/reaclette"
   },
   "author": {
     "name": "Julien Fontanet",
