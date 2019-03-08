@@ -179,6 +179,14 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             state = initialState(props);
 
             keys(state).forEach(k => {
+              if (
+                computed !== undefined &&
+                Object.prototype.hasOwnProperty.call(computed, k)
+              ) {
+                throw new TypeError(
+                  `conflict: "${k}" is defined both in state and computed`
+                );
+              }
               if (!(k in stateDescriptors)) {
                 // only local, non-computed state entries are enumerable
                 stateDescriptors[k] = {
