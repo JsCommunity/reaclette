@@ -240,7 +240,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               }
 
               Object.keys(newState).forEach(key => {
-                if (!(key in state)) {
+                if (!Object.prototype.hasOwnProperty.call(state, key)) {
                   throw new InvalidEntryError(key);
                 }
               });
