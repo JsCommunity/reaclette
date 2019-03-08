@@ -1,5 +1,6 @@
 /* eslint-env jest */
 import CircularComputedError from "./_CircularComputedError";
+import InvalidEntryError from "./_InvalidEntryError";
 
 require("raf/polyfill");
 const { createElement } = require("react");
@@ -143,6 +144,21 @@ describe("provideState", () => {
       return effects.foo().then(value => {
         expect(value).toBe(undefined);
       });
+    });
+
+    it("throws if an invalid state entry is assigned", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({}),
+        effects: {
+          foo() {
+            return { qux: 3 };
+          },
+        },
+      });
+
+      return expect(effects.foo()).rejects.toThrowError(
+        new InvalidEntryError("qux")
+      );
     });
 
     it("sync state changes are batched", async () => {

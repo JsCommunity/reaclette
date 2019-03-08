@@ -1,4 +1,5 @@
 import CircularComputedError from "./_CircularComputedError";
+import InvalidEntryError from "./_InvalidEntryError";
 
 // React does not support symbols :/
 const TAG = "reaclette";
@@ -238,6 +239,11 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 return then.call(newState, setState);
               }
 
+              Object.keys(newState).forEach(key => {
+                if (!Object.prototype.hasOwnProperty.call(state, key)) {
+                  throw new InvalidEntryError(key);
+                }
+              });
               state = { ...state, ...newState };
               dispatch();
             };
