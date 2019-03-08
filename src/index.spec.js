@@ -156,10 +156,8 @@ describe("provideState", () => {
         },
       });
 
-      expect(effects.foo()).resolves.toThrowError(
-        new InvalidEntryError(
-          `"qux" is not a valid state entry. If you want to use it, initialize it in "intialState`
-        )
+      return expect(effects.foo()).rejects.toThrowError(
+        new InvalidEntryError("qux")
       );
     });
 
