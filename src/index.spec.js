@@ -241,6 +241,19 @@ describe("provideState", () => {
       }).toThrowError(new CircularComputedError("circularComputed"));
     });
 
+    it("throws when a computed is defined both in state and computed", () => {
+      expect(() => {
+        makeTestInstance({
+          initialState: () => ({ foo: 0 }),
+          computed: {
+            foo: () => {},
+          },
+        });
+      }).toThrowError(
+        new TypeError(`conflict: "foo" is defined both in state and computed`)
+      );
+    });
+
     it("returns undefined when a computed throws on the first call", () => {
       setParentProps({ baz: 21 });
       const res = getInjectedState().throwComputed;
