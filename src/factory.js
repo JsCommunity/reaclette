@@ -69,10 +69,15 @@ module.exports = ({ Component, createElement, PropTypes }) => {
         );
       }
 
-      componentDidMount() {
+      // we need to use componentWillMount instead of componentDidMount
+      //
+      //
+      componentWillMount() {
         const spy = this._stateSpy;
         this.componentWillUnmount = this.context[TAG].subscribe(() => {
+          console.log("update");
           if (!spy.upToDate()) {
+            console.log("forceUpdate");
             this.forceUpdate();
           }
         });
@@ -109,8 +114,10 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             // computedCache.clear()
             listeners.forEach(call);
           });
-          this._subscribe = listener => {
+          const childInitializes = (this._childInitializes = []);
+          this._subscribe = (listener, childInitialize) => {
             listeners.add(listener);
+            childInitializes.push(childInitialize);
             return () => {
               listeners.delete(listener);
             };
@@ -293,12 +300,10 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
         componentDidMount() {
           const parent = this.context[TAG];
-          if (parent !== undefined) {
-            this._unsubscribe = parent.subscribe(this._dispatch);
-          }
-
           const { initialize } = this;
-          if (initialize !== undefined) {
+          if (parent !== undefined) {
+            this._unsubscribe = parent.subscribe(this._dispatch, initialize);
+          } else if (initialize !== undefined) {
             initialize();
           }
         }
