@@ -246,7 +246,7 @@ describe("provideState", () => {
         makeTestInstance({
           initialState: () => ({ foo: 0 }),
           computed: {
-            foo: () => undefined,
+            foo: () => {},
           },
         });
       }).toThrowError(
