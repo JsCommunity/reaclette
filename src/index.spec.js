@@ -244,9 +244,9 @@ describe("provideState", () => {
     it("throws when a computed is defined both in state and computed", () => {
       expect(() => {
         makeTestInstance({
-          initialState: () => ({ foo: 0, bar: 1 }),
+          initialState: () => ({ foo: 0 }),
           computed: {
-            foo: ({ bar }) => bar * 2,
+            foo: () => undefined,
           },
         });
       }).toThrowError(
