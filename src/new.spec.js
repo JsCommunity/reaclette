@@ -41,29 +41,53 @@ const makeTestInstance = (opts, props) => {
   };
 };
 
+const isReadOnly = object =>
+  !Object.isExtensible(object) &&
+  Object.getOwnPropertyNames(object).every(name => {
+    const descriptor = Object.getOwnPropertyDescriptor(object, name);
+    return (
+      !descriptor.configurable &&
+      (descriptor.set === undefined || !descriptor.writable)
+    );
+  });
+
 describe("withStore", () => {
   describe("render function", () => {
-    it("receives the store as first param with effects, state and resetState", async () => {
-      const { getRenderArgs } = makeTestInstance({
-        initialState: () => ({}),
-        effects: {},
-      });
-
-      expect(getRenderArgs()[0]).toHaveProperty("effects");
-      expect(getRenderArgs()[0]).toHaveProperty("resetState");
-      expect(getRenderArgs()[0]).toHaveProperty("state");
-    });
-
-    it("receives the props as second param", () => {
-      const props = { bar: "baz" };
+    it("returns readOnly state, effects, props and resetState func", async () => {
+      const _props = { bar: "baz" };
       const { getRenderArgs } = makeTestInstance(
         {
-          initialState: () => ({}),
-          effects: {},
+          initialState: () => ({ myEntry: "bar" }),
+          effects: {
+            myEffect() {
+              this.state.myEntry = "baz";
+            },
+          },
         },
-        props
+        _props
       );
-      expect(getRenderArgs()[1]).toHaveProperty("bar");
+
+      const store = getRenderArgs()[0];
+      const props = getRenderArgs()[1];
+
+      const { effects, resetState, state } = store;
+
+      expect(isReadOnly(store));
+
+      expect(isReadOnly(effects));
+      expect(Object.getOwnPropertyNames(effects)).toEqual([
+        "myEffect",
+        "_setState",
+      ]);
+
+      expect(typeof resetState).toBe("function");
+
+      expect(isReadOnly(state));
+      expect(Object.getOwnPropertyNames(state)).toEqual(["myEntry"]);
+      expect(state).toHaveProperty("myEntry");
+
+      expect(isReadOnly(props));
+      expect(Object.getOwnPropertyNames(props)).toEqual(["bar"]);
     });
   });
 });
