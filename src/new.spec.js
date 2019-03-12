@@ -58,14 +58,8 @@ describe("withStore", () => {
       const props = { bar: "baz" };
       const { getRenderArgs } = makeTestInstance(
         {
-          initialState: () => ({
-            foo: "bar",
-          }),
-          effects: {
-            changeState(value) {
-              this.state.foo = value;
-            },
-          },
+          initialState: () => ({}),
+          effects: {},
         },
         props
       );
