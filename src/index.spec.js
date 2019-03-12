@@ -1,6 +1,5 @@
 /* eslint-env jest */
 
-require("raf/polyfill");
 const { createElement } = require("react");
 const { configure, mount } = require("enzyme");
 
@@ -148,22 +147,6 @@ describe("withStore", () => {
       return effects.foo().then(value => {
         expect(value).toBe(undefined);
       });
-    });
-
-    // FIXME: for the new implementation
-    it.skip("throws if an invalid state entry is assigned", () => {
-      const { effects } = makeTestInstance({
-        initialState: () => ({}),
-        effects: {
-          foo() {
-            return { qux: 3 };
-          },
-        },
-      });
-
-      return expect(effects.foo()).rejects.toThrowError(
-        new InvalidEntryError("qux")
-      );
     });
 
     it("sync state changes are batched", async () => {
