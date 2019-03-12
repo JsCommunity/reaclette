@@ -1,6 +1,5 @@
 /* eslint-env jest */
 
-require("raf/polyfill");
 const { createElement } = require("react");
 const { configure, mount } = require("enzyme");
 
