@@ -67,12 +67,12 @@ describe("withStore", () => {
         _props
       );
 
-      const store = getRenderArgs()[0];
-      const props = getRenderArgs()[1];
+      const renderArgs = getRenderArgs();
+
+      const store = renderArgs[0];
+      expect(isReadOnly(store));
 
       const { effects, resetState, state } = store;
-
-      expect(isReadOnly(store));
 
       expect(isReadOnly(effects));
       expect(Object.getOwnPropertyNames(effects)).toEqual([
@@ -85,6 +85,7 @@ describe("withStore", () => {
       expect(isReadOnly(state));
       expect(Object.getOwnPropertyNames(state)).toEqual(["myEntry"]);
 
+      const props = renderArgs[1];
       expect(isReadOnly(props));
       expect(Object.getOwnPropertyNames(props)).toEqual(["bar"]);
     });
