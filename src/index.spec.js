@@ -44,7 +44,7 @@ const makeTestInstance = (opts, props) => {
 
 const noop = () => {};
 
-describe("withStore", () => {
+describe.skip("withStore", () => {
   describe("initialState", () => {
     it("is called with the props to create the initial state", () => {
       const props = { bar: "baz" };
