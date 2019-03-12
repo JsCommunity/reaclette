@@ -84,7 +84,6 @@ describe("withStore", () => {
 
       expect(isReadOnly(state));
       expect(Object.getOwnPropertyNames(state)).toEqual(["myEntry"]);
-      expect(state).toHaveProperty("myEntry");
 
       expect(isReadOnly(props));
       expect(Object.getOwnPropertyNames(props)).toEqual(["bar"]);
