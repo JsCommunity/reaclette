@@ -1,5 +1,6 @@
 /* eslint-env jest */
 
+const assert = require("assert");
 const { createElement } = require("react");
 const { configure, mount } = require("enzyme");
 
@@ -70,11 +71,11 @@ describe("withStore", () => {
       const renderArgs = getRenderArgs();
 
       const store = renderArgs[0];
-      expect(isReadOnly(store));
+      assert(isReadOnly(store));
 
       const { effects, resetState, state } = store;
 
-      expect(isReadOnly(effects));
+      assert(isReadOnly(effects));
       expect(Object.getOwnPropertyNames(effects)).toEqual([
         "myEffect",
         "_setState",
@@ -82,11 +83,11 @@ describe("withStore", () => {
 
       expect(typeof resetState).toBe("function");
 
-      expect(isReadOnly(state));
+      assert(isReadOnly(state));
       expect(Object.getOwnPropertyNames(state)).toEqual(["myEntry"]);
 
       const props = renderArgs[1];
-      expect(isReadOnly(props));
+      assert(isReadOnly(props));
       expect(Object.getOwnPropertyNames(props)).toEqual(["bar"]);
     });
   });
