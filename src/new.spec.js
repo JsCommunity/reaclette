@@ -42,9 +42,11 @@ const makeTestInstance = (opts, props) => {
   };
 };
 
+const ownProps = Object.getOwnPropertyNames;
+
 const isReadOnly = object =>
   !Object.isExtensible(object) &&
-  Object.getOwnPropertyNames(object).every(name => {
+  ownProps(object).every(name => {
     const descriptor = Object.getOwnPropertyDescriptor(object, name);
     return (
       !descriptor.configurable &&
@@ -76,19 +78,16 @@ describe("withStore", () => {
       const { effects, resetState, state } = store;
 
       assert(isReadOnly(effects));
-      expect(Object.getOwnPropertyNames(effects)).toEqual([
-        "myEffect",
-        "_setState",
-      ]);
+      expect(ownProps(effects)).toEqual(["myEffect", "_setState"]);
 
       expect(typeof resetState).toBe("function");
 
       assert(isReadOnly(state));
-      expect(Object.getOwnPropertyNames(state)).toEqual(["myEntry"]);
+      expect(ownProps(state)).toEqual(["myEntry"]);
 
       const props = renderArgs[1];
       assert(isReadOnly(props));
-      expect(Object.getOwnPropertyNames(props)).toEqual(["bar"]);
+      expect(ownProps(props)).toEqual(["bar"]);
     });
   });
 });
