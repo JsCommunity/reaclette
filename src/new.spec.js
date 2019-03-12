@@ -46,14 +46,8 @@ describe("withStore", () => {
   describe("render function", () => {
     it("receives the store as first param with effects, state and resetState", async () => {
       const { getRenderArgs } = makeTestInstance({
-        initialState: () => ({
-          foo: "bar",
-        }),
-        effects: {
-          changeState(value) {
-            this.state.foo = value;
-          },
-        },
+        initialState: () => ({}),
+        effects: {},
       });
 
       expect(getRenderArgs()[0]).toHaveProperty("effects");
