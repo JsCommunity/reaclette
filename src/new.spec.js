@@ -53,7 +53,7 @@ const isReadOnly = object =>
 
 describe("withStore", () => {
   describe("render function", () => {
-    it("returns readOnly state, effects, props and resetState func", async () => {
+    it("receives readOnly store and props", async () => {
       const _props = { bar: "baz" };
       const { getRenderArgs } = makeTestInstance(
         {
