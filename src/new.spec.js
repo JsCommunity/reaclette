@@ -44,6 +44,8 @@ const makeTestInstance = (opts, props) => {
 
 const ownProps = Object.getOwnPropertyNames;
 
+const noop = () => {};
+
 const isReadOnly = object =>
   !Object.isExtensible(object) &&
   ownProps(object).every(name => {
@@ -120,6 +122,7 @@ describe("withStore", () => {
         },
       });
 
+      noop(getState().qux);
       expect(getState().foo).toBe("bar");
     });
   });
