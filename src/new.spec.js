@@ -4,6 +4,7 @@ const assert = require("assert");
 const { createElement } = require("react");
 const { configure, mount } = require("enzyme");
 
+const CircularComputedError = require("./_CircularComputedError");
 const { withStore } = require("./");
 
 configure({ adapter: new (require("enzyme-adapter-react-16"))() });
@@ -110,6 +111,37 @@ describe("withStore", () => {
       });
 
       expect(getState().baz).toBe("baz");
+    });
+
+    it("cannot access itself", () => {
+      const { getState } = makeTestInstance({
+        initialState: () => ({}),
+        computed: {
+          circularComputed: ({ circularComputed }) => {},
+        },
+      });
+
+      expect(() => {
+        return getState().circularComputed;
+      }).toThrowError(new CircularComputedError("circularComputed"));
+    });
+
+    it("receive read-only props", () => {
+      const props = { bar: 2 };
+      const { getState } = makeTestInstance(
+        {
+          initialState: () => ({}),
+          computed: {
+            baz: (_, props) => {
+              assert(isReadOnly(props));
+              return props.bar * 2;
+            },
+          },
+        },
+        props
+      );
+
+      expect(getState().baz).toBe(4);
     });
   });
 });
