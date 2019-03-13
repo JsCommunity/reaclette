@@ -111,5 +111,53 @@ describe("withStore", () => {
 
       expect(getState().baz).toBe("baz");
     });
+
+    it("are not called when its state/props dependencies do not change", async () => {
+      const baz = jest.fn(({ qux }, { bar }) => bar * qux);
+      const props = { bar: 2, thud: 9 };
+      const { effects, setParentProps } = makeTestInstance(
+        {
+          initialState: () => ({ qux: 1, corge: 4 }),
+          effects: {
+            changeState() {
+              this.state.corge = 8;
+            },
+          },
+          computed: {
+            baz,
+          },
+        },
+        props
+      );
+
+      setParentProps({ thud: 8 });
+      await effects.changeState();
+      expect(baz.mock.calls.length).toBe(0);
+    });
+
+    it("is called when its state/props dependencies change", async () => {
+      const baz = jest.fn(({ bar }, { qux }) => bar + qux + 2);
+      const props = { qux: 2 };
+      const { effects, getState, setParentProps } = makeTestInstance(
+        {
+          initialState: () => ({ bar: 3 }),
+          effects: {
+            changeState() {
+              this.state.bar = 5;
+            },
+          },
+          computed: {
+            baz,
+          },
+        },
+        props
+      );
+
+      setParentProps({ qux: 4 });
+      expect(getState().baz).toBe(9);
+      await effects.changeState();
+      expect(getState().baz).toBe(11);
+      expect(baz.mock.calls.length).toBe(2);
+    });
   });
 });
