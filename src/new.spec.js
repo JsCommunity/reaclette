@@ -115,7 +115,7 @@ describe("withStore", () => {
     it("are not called when its state/props dependencies do not change", async () => {
       const baz = jest.fn(({ qux }, { bar }) => bar * qux);
       const props = { bar: 2, thud: 9 };
-      const { effects, setParentProps } = makeTestInstance(
+      const { effects, getState, setParentProps } = makeTestInstance(
         {
           initialState: () => ({ qux: 1, corge: 4 }),
           effects: {
@@ -130,9 +130,10 @@ describe("withStore", () => {
         props
       );
 
+      expect(getState().baz).toBe(2);
       setParentProps({ thud: 8 });
       await effects.changeState();
-      expect(baz.mock.calls.length).toBe(0);
+      expect(baz.mock.calls.length).toBe(1);
     });
 
     it("is called when its state/props dependencies change", async () => {
