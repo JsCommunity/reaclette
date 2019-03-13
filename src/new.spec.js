@@ -122,15 +122,12 @@ describe("withStore", () => {
 
     it("cannot access itself", () => {
       const { getState } = makeTestInstance({
-        initialState: () => ({}),
         computed: {
-          circularComputed: ({ circularComputed }) => {},
+          circular: ({ circular }) => {},
         },
       });
 
-      expect(() => {
-        return getState().circularComputed;
-      }).toThrow(CircularComputedError);
+      expect(() => getState().circular).toThrow(CircularComputedError);
     });
   });
 });
