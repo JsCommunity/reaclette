@@ -94,7 +94,7 @@ describe("withStore", () => {
 
   describe("computed", () => {
     it("receive read-only state and props", () => {
-      const props = { qux: 2 };
+      const props = { qux: "qux" };
       const { getState } = makeTestInstance(
         {
           initialState: () => ({
@@ -108,7 +108,7 @@ describe("withStore", () => {
 
               expect(state.foo).toBe("foo");
               expect(state.bar).toBe("bar");
-              expect(props.qux).toBe(2);
+              expect(props.qux).toBe("qux");
 
               return "baz";
             },
