@@ -44,8 +44,6 @@ const makeTestInstance = (opts, props) => {
 
 const ownProps = Object.getOwnPropertyNames;
 
-const noop = () => {};
-
 const isReadOnly = object =>
   !Object.isExtensible(object) &&
   ownProps(object).every(name => {
@@ -94,24 +92,24 @@ describe("withStore", () => {
   });
 
   describe("computed", () => {
-    it("can read state and computed and cannot write state and computed", () => {
+    it("receive read-only state", () => {
       const { getState } = makeTestInstance({
         initialState: () => ({
-          foo: "bar",
+          foo: "foo",
         }),
         computed: {
-          qux: ({ foo }) => foo,
-          corge: ({ qux }) => qux,
-          thud: state => {
+          bar: () => "bar",
+          baz(state) {
             assert(isReadOnly(state));
+            expect(state.foo).toBe("foo");
+            expect(state.bar).toBe("bar");
+
+            return "baz",
           },
         },
       });
 
-      noop(getState().thud);
-
-      expect(getState().qux).toBe("bar");
-      expect(getState().corge).toBe("bar");
+      expect(getState().baz).toBe("baz");
     });
   });
 });
