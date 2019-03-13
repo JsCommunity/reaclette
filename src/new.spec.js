@@ -90,4 +90,26 @@ describe("withStore", () => {
       expect(ownProps(props)).toEqual(["bar"]);
     });
   });
+
+  describe("computed", () => {
+    it("receive read-only state", () => {
+      const { getState } = makeTestInstance({
+        initialState: () => ({
+          foo: "foo",
+        }),
+        computed: {
+          bar: () => "bar",
+          baz(state) {
+            assert(isReadOnly(state));
+            expect(state.foo).toBe("foo");
+            expect(state.bar).toBe("bar");
+
+            return "baz";
+          },
+        },
+      });
+
+      expect(getState().baz).toBe("baz");
+    });
+  });
 });
