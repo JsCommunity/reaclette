@@ -93,22 +93,29 @@ describe("withStore", () => {
   });
 
   describe("computed", () => {
-    it("receive read-only state", () => {
-      const { getState } = makeTestInstance({
-        initialState: () => ({
-          foo: "foo",
-        }),
-        computed: {
-          bar: () => "bar",
-          baz(state) {
-            assert(isReadOnly(state));
-            expect(state.foo).toBe("foo");
-            expect(state.bar).toBe("bar");
+    it("receive read-only state and props", () => {
+      const props = { qux: 2 };
+      const { getState } = makeTestInstance(
+        {
+          initialState: () => ({
+            foo: "foo",
+          }),
+          computed: {
+            bar: () => "bar",
+            baz(state, props) {
+              assert(isReadOnly(state));
+              assert(isReadOnly(props));
 
-            return "baz";
+              expect(state.foo).toBe("foo");
+              expect(state.bar).toBe("bar");
+              expect(props.qux).toBe(2);
+
+              return "baz";
+            },
           },
         },
-      });
+        props
+      );
 
       expect(getState().baz).toBe("baz");
     });
@@ -124,24 +131,6 @@ describe("withStore", () => {
       expect(() => {
         return getState().circularComputed;
       }).toThrowError(new CircularComputedError("circularComputed"));
-    });
-
-    it("receive read-only props", () => {
-      const props = { bar: 2 };
-      const { getState } = makeTestInstance(
-        {
-          initialState: () => ({}),
-          computed: {
-            baz: (_, props) => {
-              assert(isReadOnly(props));
-              return props.bar * 2;
-            },
-          },
-        },
-        props
-      );
-
-      expect(getState().baz).toBe(4);
     });
   });
 });
