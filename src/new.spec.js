@@ -130,7 +130,7 @@ describe("withStore", () => {
 
       expect(() => {
         return getState().circularComputed;
-      }).toThrowError(new CircularComputedError("circularComputed"));
+      }).toThrow(CircularComputedError);
     });
   });
 });
