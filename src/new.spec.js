@@ -90,4 +90,39 @@ describe("withStore", () => {
       expect(ownProps(props)).toEqual(["bar"]);
     });
   });
+
+  describe("computed", () => {
+    it("can read state and computed entries", () => {
+      const { getState } = makeTestInstance({
+        initialState: () => ({
+          foo: "bar",
+        }),
+        computed: {
+          qux: ({ foo }) => foo,
+          corge: ({ qux }) => qux,
+        },
+      });
+
+      expect(getState().qux).toBe("bar");
+      expect(getState().corge).toBe("bar");
+    });
+
+    it("cannot write state", () => {
+      const { getState } = makeTestInstance({
+        initialState: () => ({
+          foo: "bar",
+        }),
+        computed: {
+          qux: ({ foo }) => {
+            this.state.foo = "fred";
+            return foo;
+          },
+        },
+      });
+
+      expect(() => getState().qux).toThrowError(
+        new TypeError("Cannot set property 'foo' of undefined")
+      );
+    });
+  });
 });
