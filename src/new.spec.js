@@ -120,9 +120,7 @@ describe("withStore", () => {
         },
       });
 
-      expect(() => getState().qux).toThrowError(
-        new TypeError("Cannot set property 'foo' of undefined")
-      );
+      expect(getState().foo).toBe("bar");
     });
   });
 });

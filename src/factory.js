@@ -110,10 +110,7 @@ module.exports = ({ Component }) => {
                   try {
                     value = c(stateSpy.proxy, propsSpy.proxy);
                   } catch (error) {
-                    if (
-                      error instanceof CircularComputedError ||
-                      error instanceof TypeError
-                    ) {
+                    if (error instanceof CircularComputedError) {
                       throw error;
                     }
 
