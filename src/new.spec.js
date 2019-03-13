@@ -104,7 +104,7 @@ describe("withStore", () => {
             expect(state.foo).toBe("foo");
             expect(state.bar).toBe("bar");
 
-            return "baz",
+            return "baz";
           },
         },
       });
