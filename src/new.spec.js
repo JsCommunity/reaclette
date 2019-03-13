@@ -94,7 +94,7 @@ describe("withStore", () => {
   });
 
   describe("computed", () => {
-    it("can read state and computed entries", () => {
+    it("can read state and computed and cannot write state and computed", () => {
       const { getState } = makeTestInstance({
         initialState: () => ({
           foo: "bar",
@@ -102,28 +102,16 @@ describe("withStore", () => {
         computed: {
           qux: ({ foo }) => foo,
           corge: ({ qux }) => qux,
-        },
-      });
-
-      expect(getState().qux).toBe("bar");
-      expect(getState().corge).toBe("bar");
-    });
-
-    it("cannot write state", () => {
-      const { getState } = makeTestInstance({
-        initialState: () => ({
-          foo: "bar",
-        }),
-        computed: {
-          qux: ({ foo }) => {
-            this.state.foo = "fred";
-            return foo;
+          thud: state => {
+            assert(isReadOnly(state));
           },
         },
       });
 
-      noop(getState().qux);
-      expect(getState().foo).toBe("bar");
+      noop(getState().thud);
+
+      expect(getState().qux).toBe("bar");
+      expect(getState().corge).toBe("bar");
     });
   });
 });
