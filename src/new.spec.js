@@ -159,7 +159,7 @@ describe("withStore", () => {
       setParentProps({ b: 3 });
 
       expect(getState().sum).toBe(5);
-      expect(sum.mock.calls.length).toBe(2);
+      expect(sum.mock.calls.length).toBe(3);
     });
   });
 });
