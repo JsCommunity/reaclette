@@ -129,5 +129,55 @@ describe("withStore", () => {
 
       expect(() => getState().circular).toThrow(CircularComputedError);
     });
+
+    it("are not called when its state/props dependencies do not change", async () => {
+      const sum = jest.fn(({ a }, { b }) => a + b);
+      const props = { b: 2, c: 9 };
+      const { effects, getState, setParentProps } = makeTestInstance(
+        {
+          initialState: () => ({ a: 1, d: 4 }),
+          computed: {
+            sum,
+          },
+        },
+        props
+      );
+
+      expect(getState().sum).toBe(3);
+      expect(sum.mock.calls.length).toBe(1);
+
+      setParentProps({ c: 8 });
+      await effects._setState({ d: 8 });
+
+      expect(getState().sum).toBe(3);
+      expect(sum.mock.calls.length).toBe(1);
+    });
+
+    it("is called when its state/props dependencies change", async () => {
+      const sum = jest.fn(({ a }, { b }) => a + b);
+      const props = { b: 2, c: 9 };
+      const { effects, getState, setParentProps } = makeTestInstance(
+        {
+          initialState: () => ({ a: 1, d: 4 }),
+          computed: {
+            sum,
+          },
+        },
+        props
+      );
+
+      expect(getState().sum).toBe(3);
+      expect(sum.mock.calls.length).toBe(1);
+
+      await effects._setState({ a: 2 });
+
+      expect(getState().sum).toBe(4);
+      expect(sum.mock.calls.length).toBe(2);
+
+      setParentProps({ b: 3 });
+
+      expect(getState().sum).toBe(5);
+      expect(sum.mock.calls.length).toBe(3);
+    });
   });
 });
