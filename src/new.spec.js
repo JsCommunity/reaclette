@@ -113,53 +113,43 @@ describe("withStore", () => {
     });
 
     it("are not called when its state/props dependencies do not change", async () => {
-      const baz = jest.fn(({ qux }, { bar }) => bar * qux);
-      const props = { bar: 2, thud: 9 };
+      const sum = jest.fn(({ a }, { b }) => a + b);
+      const props = { b: 2, c: 9 };
       const { effects, getState, setParentProps } = makeTestInstance(
         {
-          initialState: () => ({ qux: 1, corge: 4 }),
-          effects: {
-            changeState() {
-              this.state.corge = 8;
-            },
-          },
+          initialState: () => ({ a: 1, d: 4 }),
           computed: {
-            baz,
+            sum,
           },
         },
         props
       );
 
-      expect(getState().baz).toBe(2);
-      setParentProps({ thud: 8 });
-      await effects.changeState();
-      expect(getState().baz).toBe(2);
-      expect(baz.mock.calls.length).toBe(1);
+      expect(getState().sum).toBe(3);
+      setParentProps({ c: 8 });
+      await effects._setState({ d: 8 });
+      expect(getState().sum).toBe(3);
+      expect(sum.mock.calls.length).toBe(1);
     });
 
     it("is called when its state/props dependencies change", async () => {
-      const baz = jest.fn(({ bar }, { qux }) => bar + qux + 2);
-      const props = { qux: 2 };
+      const sum = jest.fn(({ a }, { b }) => a + b);
+      const props = { b: 2, c: 9 };
       const { effects, getState, setParentProps } = makeTestInstance(
         {
-          initialState: () => ({ bar: 3 }),
-          effects: {
-            changeState() {
-              this.state.bar = 5;
-            },
-          },
+          initialState: () => ({ a: 1, d: 4 }),
           computed: {
-            baz,
+            sum,
           },
         },
         props
       );
 
-      setParentProps({ qux: 4 });
-      expect(getState().baz).toBe(9);
-      await effects.changeState();
-      expect(getState().baz).toBe(11);
-      expect(baz.mock.calls.length).toBe(2);
+      expect(getState().sum).toBe(3);
+      setParentProps({ b: 3 });
+      await effects._setState({ a: 2 });
+      expect(getState().sum).toBe(5);
+      expect(sum.mock.calls.length).toBe(2);
     });
   });
 });
