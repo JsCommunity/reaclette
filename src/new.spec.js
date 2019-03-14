@@ -133,6 +133,7 @@ describe("withStore", () => {
       expect(getState().baz).toBe(2);
       setParentProps({ thud: 8 });
       await effects.changeState();
+      expect(getState().baz).toBe(2);
       expect(baz.mock.calls.length).toBe(1);
     });
 
