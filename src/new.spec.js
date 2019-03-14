@@ -179,5 +179,59 @@ describe("withStore", () => {
       expect(getState().sum).toBe(5);
       expect(sum.mock.calls.length).toBe(3);
     });
+
+    describe("async", () => {
+      let promise, resolve;
+      const reset = () => {
+        // eslint-disable-next-line promise/param-names
+        promise = new Promise(resolve_ => {
+          resolve = resolve_;
+        });
+      };
+
+      let getState, setParentProps;
+      beforeEach(() => {
+        ({ getState, setParentProps } = makeTestInstance(
+          {
+            computed: { value: (_, { foo }) => promise },
+          },
+          { foo: 1 }
+        ));
+      });
+
+      it("returns undefined before fulfilment then fulfilment value", async () => {
+        reset();
+
+        expect(getState().value).toBe(undefined);
+
+        resolve("foo");
+        await promise;
+
+        expect(getState().value).toBe("foo");
+      });
+
+      it("follows the latest computation when dependencies change", async () => {
+        // trigger computed
+        reset();
+        expect(getState().value).toBe(undefined);
+
+        const prevPromise = promise;
+        const prevResolve = resolve;
+
+        reset();
+        setParentProps({ foo: 2 });
+        expect(getState().value).toBe(undefined);
+
+        prevResolve("foo");
+        await prevPromise;
+
+        expect(getState().value).toBe(undefined);
+
+        resolve("baz");
+        await promise;
+
+        expect(getState().value).toBe("baz");
+      });
+    });
   });
 });
