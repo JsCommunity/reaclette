@@ -234,4 +234,55 @@ describe("withStore", () => {
       });
     });
   });
+
+  describe("effects", () => {
+    it("receives the passed arguments", () => {
+      const args = ["bar", "baz"];
+      const { effects } = makeTestInstance({
+        effects: {
+          foo: (...rest) => {
+            expect(rest).toEqual(args);
+          },
+        },
+      });
+      return effects.foo(...args);
+    });
+
+    it("are called with read-only effects and props and writable state in context", () => {
+      const state = { foo: "bar" };
+      const { effects, getParentProps } = makeTestInstance({
+        initialState: () => state,
+        effects: {
+          foo() {
+            assert(isReadOnly(this.effects));
+            expect(this.effects).toBe(effects);
+
+            assert(isReadOnly(this.props));
+            expect(this.props).toBe(getParentProps());
+
+            expect(state.foo).toBe(this.state.foo);
+            this.state.foo = "baz";
+            expect(this.state.foo).toBe("baz");
+          },
+        },
+      });
+      return effects.foo();
+    });
+
+    it("can use other effects", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({ qux: "qux" }),
+        effects: {
+          async foo() {
+            await this.effects.bar();
+            expect(this.state.qux).toBe("fred");
+          },
+          bar() {
+            this.state.qux = "fred";
+          },
+        },
+      });
+      return effects.foo();
+    });
+  });
 });
