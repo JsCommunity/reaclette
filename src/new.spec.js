@@ -126,8 +126,11 @@ describe("withStore", () => {
       );
 
       expect(getState().sum).toBe(3);
+      expect(sum.mock.calls.length).toBe(1);
+
       setParentProps({ c: 8 });
       await effects._setState({ d: 8 });
+
       expect(getState().sum).toBe(3);
       expect(sum.mock.calls.length).toBe(1);
     });
@@ -146,8 +149,15 @@ describe("withStore", () => {
       );
 
       expect(getState().sum).toBe(3);
-      setParentProps({ b: 3 });
+      expect(sum.mock.calls.length).toBe(1);
+
       await effects._setState({ a: 2 });
+
+      expect(getState().sum).toBe(4);
+      expect(sum.mock.calls.length).toBe(2);
+
+      setParentProps({ b: 3 });
+
       expect(getState().sum).toBe(5);
       expect(sum.mock.calls.length).toBe(2);
     });
