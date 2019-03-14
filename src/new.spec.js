@@ -180,7 +180,7 @@ describe("withStore", () => {
       expect(sum.mock.calls.length).toBe(3);
     });
 
-    it("can be async", async () => {
+    describe("async", () => {
       let promise, resolve;
       const reset = () => {
         // eslint-disable-next-line promise/param-names
@@ -188,34 +188,50 @@ describe("withStore", () => {
           resolve = resolve_;
         });
       };
-      reset();
 
-      const { getState, setParentProps } = makeTestInstance(
-        {
-          computed: { value: (_, { foo }) => promise },
-        },
-        { foo: 1 }
-      );
+      let getState, setParentProps;
+      beforeEach(() => {
+        ({ getState, setParentProps } = makeTestInstance(
+          {
+            computed: { value: (_, { foo }) => promise },
+          },
+          { foo: 1 }
+        ));
+      });
 
-      // trigger a first computation
-      expect(getState().value).toBe(undefined);
+      it("returns undefined before fulfilment then fulfilment value", async () => {
+        reset();
 
-      const prevPromise = promise;
-      const prevResolve = resolve;
+        expect(getState().value).toBe(undefined);
 
-      // trigger a second computation
-      reset();
-      setParentProps({ foo: 2 });
-      expect(getState().value).toBe(undefined);
+        resolve("foo");
+        await promise;
 
-      // resolve them in reverse order
-      resolve("bar");
-      await promise;
-      prevResolve("foo");
-      await prevPromise;
+        expect(getState().value).toBe("foo");
+      });
 
-      // the last computation should win
-      expect(getState().value).toBe("bar");
+      it("follows the latest computation when dependencies change", async () => {
+        // trigger computed
+        reset();
+        expect(getState().value).toBe(undefined);
+
+        const prevPromise = promise;
+        const prevResolve = resolve;
+
+        reset();
+        setParentProps({ foo: 2 });
+        expect(getState().value).toBe(undefined);
+
+        prevResolve("foo");
+        await prevPromise;
+
+        expect(getState().value).toBe(undefined);
+
+        resolve("baz");
+        await promise;
+
+        expect(getState().value).toBe("baz");
+      });
     });
   });
 });
