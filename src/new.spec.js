@@ -179,5 +179,43 @@ describe("withStore", () => {
       expect(getState().sum).toBe(5);
       expect(sum.mock.calls.length).toBe(3);
     });
+
+    it("can be async", async () => {
+      let promise, resolve;
+      const reset = () => {
+        // eslint-disable-next-line promise/param-names
+        promise = new Promise(resolve_ => {
+          resolve = resolve_;
+        });
+      };
+      reset();
+
+      const { getState, setParentProps } = makeTestInstance(
+        {
+          computed: { value: (_, { foo }) => promise },
+        },
+        { foo: 1 }
+      );
+
+      // trigger a first computation
+      expect(getState().value).toBe(undefined);
+
+      const prevPromise = promise;
+      const prevResolve = resolve;
+
+      // trigger a second computation
+      reset();
+      setParentProps({ foo: 2 });
+      expect(getState().value).toBe(undefined);
+
+      // resolve them in reverse order
+      resolve("bar");
+      await promise;
+      prevResolve("foo");
+      await prevPromise;
+
+      // the last computation should win
+      expect(getState().value).toBe("bar");
+    });
   });
 });
