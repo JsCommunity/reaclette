@@ -234,4 +234,59 @@ describe("withStore", () => {
       });
     });
   });
+
+  describe("effects", () => {
+    it("receives the passed arguments", () => {
+      const args = ["bar", "baz"];
+      const { effects } = makeTestInstance({
+        effects: {
+          foo(...rest) {
+            expect(rest).toEqual(args);
+          },
+        },
+      });
+      return effects.foo(...args);
+    });
+
+    it("are called with read-only effects and props and resetState and writable state in context", () => {
+      const { effects, getParentProps } = makeTestInstance({
+        initialState: () => ({ myEntry: "bar" }),
+        effects: {
+          myEffect() {
+            assert(isReadOnly(this));
+
+            assert(isReadOnly(this.effects));
+            expect(ownProps(this.effects)).toEqual(["myEffect", "_setState"]);
+
+            expect(typeof this.resetState).toBe("function");
+
+            expect(ownProps(this.state)).toEqual(["myEntry"]);
+            expect(this.state.myEntry).toBe("bar");
+            this.state.myEntry = "baz";
+            expect(this.state.myEntry).toBe("baz");
+
+            assert(isReadOnly(this.props));
+            expect(this.props).toBe(getParentProps());
+          },
+        },
+      });
+      return effects.myEffect();
+    });
+
+    it("can use other effects", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({ qux: "qux" }),
+        effects: {
+          async foo() {
+            await this.effects.bar();
+            expect(this.state.qux).toBe("fred");
+          },
+          bar() {
+            this.state.qux = "fred";
+          },
+        },
+      });
+      return effects.foo();
+    });
+  });
 });
