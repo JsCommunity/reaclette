@@ -263,8 +263,6 @@ describe("withStore", () => {
             this.state.myEntry = "baz";
             expect(this.state.myEntry).toBe("baz");
 
-            expect(typeof this.resetState).toBe("function");
-            this.state.myEntry = "thud";
             await this.resetState();
             expect(this.state.myEntry).toBe("bar");
 
