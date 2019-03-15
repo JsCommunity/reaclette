@@ -261,7 +261,7 @@ describe("withStore", () => {
             expect(typeof this.resetState).toBe("function");
 
             expect(ownProps(this.state)).toEqual(["myEntry"]);
-            expect(this.state.myEntry).toBe("bar);
+            expect(this.state.myEntry).toBe("bar");
             this.state.myEntry = "baz";
             expect(this.state.myEntry).toBe("baz");
 
