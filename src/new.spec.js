@@ -297,10 +297,7 @@ describe("withStore", () => {
         initialState: () => ({}),
         effects: {
           myEffect() {
-            expect(() => {
-              this.state.foo = "foo";
-            }).toThrow(TypeError);
-            expect(ownProps(this.state)).toEqual([]);
+            assert(!Object.isExtensible(this.state));
           },
         },
       });
@@ -309,17 +306,16 @@ describe("withStore", () => {
 
     it("cannot set computed entries", () => {
       const { effects } = makeTestInstance({
-        initialState: () => ({ a: 5 }),
         effects: {
           myEffect() {
             expect(() => {
-              this.state.double = 6;
+              this.state.foo = "bar";
             }).toThrow(TypeError);
-            expect(this.state.double).toBe(10);
+            expect(this.state.foo).toBe("foo");
           },
         },
         computed: {
-          double: ({ a }) => a * 2,
+          foo: () => "foo",
         },
       });
       return effects.myEffect();
