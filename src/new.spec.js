@@ -325,7 +325,7 @@ describe("withStore", () => {
       return effects.myEffect();
     });
 
-    it("can be async", () => {
+    it("can be async", async () => {
       const { effects, getState } = makeTestInstance({
         initialState: () => ({ qux: "qux " }),
         effects: {
@@ -337,9 +337,8 @@ describe("withStore", () => {
           },
         },
       });
-      return expect(effects.foo().then(() => getState().qux)).resolves.toBe(
-        "fred"
-      );
+      await effects.foo();
+      expect(getState().qux).toBe("fred");
     });
   });
 });
