@@ -324,5 +324,22 @@ describe("withStore", () => {
       });
       return effects.myEffect();
     });
+
+    it("can be async", () => {
+      const { effects, getState } = makeTestInstance({
+        initialState: () => ({ qux: "qux " }),
+        effects: {
+          async foo() {
+            await this.effects.bar();
+          },
+          bar() {
+            this.state.qux = "fred";
+          },
+        },
+      });
+      return expect(effects.foo().then(() => getState().qux)).resolves.toBe(
+        "fred"
+      );
+    });
   });
 });
