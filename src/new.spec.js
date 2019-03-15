@@ -258,15 +258,15 @@ describe("withStore", () => {
             assert(isReadOnly(this.effects));
             expect(ownProps(this.effects)).toEqual(["myEffect", "_setState"]);
 
-            expect(typeof this.resetState).toBe("function");
-            this.state.myEntry = "thud";
-            await this.resetState();
-            expect(this.state.myEntry).toBe("bar");
-
             expect(ownProps(this.state)).toEqual(["myEntry"]);
             expect(this.state.myEntry).toBe("bar");
             this.state.myEntry = "baz";
             expect(this.state.myEntry).toBe("baz");
+
+            expect(typeof this.resetState).toBe("function");
+            this.state.myEntry = "thud";
+            await this.resetState();
+            expect(this.state.myEntry).toBe("bar");
 
             assert(isReadOnly(this.props));
             expect(this.props).toBe(getParentProps());
