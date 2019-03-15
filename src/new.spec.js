@@ -326,17 +326,22 @@ describe("withStore", () => {
     });
 
     it("can be async", async () => {
+      let resolve;
+      // eslint-disable-next-line promise/param-names
+      const promise = new Promise(resolve_ => {
+        resolve = resolve_;
+      });
       const { effects, getState } = makeTestInstance({
-        initialState: () => ({ qux: "qux " }),
+        initialState: () => ({ qux: "qux" }),
         effects: {
           async foo() {
-            await this.effects.bar();
-          },
-          bar() {
+            await promise;
             this.state.qux = "fred";
           },
         },
       });
+
+      resolve();
       await effects.foo();
       expect(getState().qux).toBe("fred");
     });
