@@ -240,7 +240,7 @@ describe("withStore", () => {
       const args = ["bar", "baz"];
       const { effects } = makeTestInstance({
         effects: {
-          foo: (...rest) => {
+          foo(...rest) {
             expect(rest).toEqual(args);
           },
         },
@@ -250,7 +250,7 @@ describe("withStore", () => {
 
     it("are called with read-only effects and props and resetState and writable state in context", () => {
       const { effects, getParentProps } = makeTestInstance({
-        initialState: () =>({ myEntry: "bar" }),
+        initialState: () => ({ myEntry: "bar" }),
         effects: {
           myEffect() {
             assert(isReadOnly(this));
@@ -270,7 +270,7 @@ describe("withStore", () => {
           },
         },
       });
-      return effects.foo();
+      return effects.myEffect();
     });
 
     it("can use other effects", () => {
