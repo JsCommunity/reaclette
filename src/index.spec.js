@@ -123,12 +123,13 @@ describe("provideState", () => {
     });
 
     it("are called with effects, props and state in context", () => {
-      const { effects, getParentProps, getParentState } = makeTestInstance({
+      const { effects, getParentProps } = makeTestInstance({
+        initialState: () => ({ foo: "bar" }),
         effects: {
           foo() {
             expect(this.effects).toBe(effects);
             expect(this.props).toBe(getParentProps());
-            expect(this.state).toBe(getParentState());
+            expect(this.state).toEqual({ foo: "bar" });
           },
         },
       });

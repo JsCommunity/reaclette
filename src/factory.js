@@ -7,7 +7,7 @@ const TAG = "reaclette";
 const call = f => f();
 const isPromise = v => v != null && typeof v.then === "function";
 const noop = Function.prototype;
-const { create, keys } = Object;
+const { create, keys, seal } = Object;
 
 const makeSpy = (keys, accessor) => {
   const descriptors = create(null);
@@ -67,6 +67,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           parent.stateKeys,
           k => state[k]
         );
+        seal(this._stateProxy);
       }
 
       componentDidMount() {
@@ -117,6 +118,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           };
 
           const stateDescriptors = create(null);
+          const writableStateDescriptors = create(null);
 
           if (computed !== undefined) {
             const propsKeys = keys(props);
@@ -126,20 +128,21 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             keys(computed).forEach(k => {
               const c = computed[k];
               let previousValue, propsProxy, propsSpy, stateProxy, stateSpy;
-              stateDescriptors[k] = {
+              writableStateDescriptors[k] = stateDescriptors[k] = {
                 get: () => {
                   if (propsProxy === undefined) {
                     [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
+                    seal(propsProxy);
                     [stateProxy, stateSpy] = makeSpy(
                       completeStateKeys.filter(key => key !== k),
                       stateAccessor
                     );
-
                     Object.defineProperty(stateProxy, k, {
                       get() {
                         throw new CircularComputedError(k);
                       },
                     });
+                    seal(stateProxy);
                   } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
                     return isPromise(previousValue) ? undefined : previousValue;
                   }
@@ -185,9 +188,11 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 );
               }
               // only local, non-computed state entries are enumerable
-              stateDescriptors[k] = {
-                enumerable: true,
-                get: () => state[k],
+              writableStateDescriptors[k] = {
+                ...(stateDescriptors[k] = {
+                  enumerable: true,
+                  get: () => state[k],
+                }),
                 set: value => {
                   state = { ...state, [k]: value };
                   dispatch();
@@ -208,9 +213,8 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             }
           }
 
-          const completeState = (this._state = create(
-            parentState,
-            stateDescriptors
+          const completeState = (this._state = seal(
+            create(parentState, stateDescriptors)
           ));
           const completeStateKeys = (this._stateKeys = keys(stateDescriptors));
 
@@ -228,6 +232,8 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
           let effectsDescriptors;
           if (effects !== undefined) {
+            const writableState = seal(create(null, writableStateDescriptors));
+
             const setState = newState => {
               if (newState == null) {
                 return;
@@ -259,12 +265,12 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                   return Promise.resolve(
                     setState(
                       e.call(
-                        {
+                        seal({
                           effects: this._effects,
                           props: this.props,
                           resetState: this._resetState,
-                          state: completeState,
-                        },
+                          state: writableState,
+                        }),
                         this._effects,
                         ...args
                       )
@@ -286,7 +292,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               }
             });
           }
-          this._effects = create(parentEffects, effectsDescriptors);
+          this._effects = seal(create(parentEffects, effectsDescriptors));
         }
 
         _unsubscribe = noop;
