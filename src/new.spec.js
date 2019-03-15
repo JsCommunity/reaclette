@@ -259,6 +259,9 @@ describe("withStore", () => {
             expect(ownProps(this.effects)).toEqual(["myEffect", "_setState"]);
 
             expect(typeof this.resetState).toBe("function");
+            this.state.myEntry = "thud";
+            this.resetState();
+            expect(this.state.myEntry).toBe("bar");
 
             expect(ownProps(this.state)).toEqual(["myEntry"]);
             expect(this.state.myEntry).toBe("bar");
@@ -283,20 +286,6 @@ describe("withStore", () => {
           },
           bar() {
             this.state.qux = "fred";
-          },
-        },
-      });
-      return effects.foo();
-    });
-
-    it("can reset state", () => {
-      const { effects } = makeTestInstance({
-        initialState: () => ({ qux: "qux" }),
-        effects: {
-          async foo() {
-            this.state.qux = "baz";
-            this.resetState();
-            expect(this.state.qux).toBe("qux");
           },
         },
       });
