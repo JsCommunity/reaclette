@@ -249,7 +249,7 @@ describe("withStore", () => {
     });
 
     it("are called with read-only effects and props and resetState and writable state in context", () => {
-      const state = { foo: "bar" };
+      const state = { qux: "qux" };
       const { effects, getParentProps } = makeTestInstance({
         initialState: () => state,
         effects: {
@@ -259,14 +259,15 @@ describe("withStore", () => {
             expect(typeof this.resetState).toBe("function");
 
             assert(isReadOnly(this.effects));
-            expect(this.effects).toBe(effects);
+            expect(ownProps(this.effects)).toEqual(["foo", "_setState"]);
 
             assert(isReadOnly(this.props));
             expect(this.props).toBe(getParentProps());
 
-            expect(state.foo).toBe(this.state.foo);
-            this.state.foo = "baz";
-            expect(this.state.foo).toBe("baz");
+            expect(ownProps(this.state)).toEqual(["qux"]);
+            expect(state.qux).toBe(this.state.qux);
+            this.state.qux = "baz";
+            expect(this.state.qux).toBe("baz");
           },
         },
       });
