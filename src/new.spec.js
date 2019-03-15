@@ -252,7 +252,7 @@ describe("withStore", () => {
       const { effects, getParentProps } = makeTestInstance({
         initialState: () => ({ myEntry: "bar" }),
         effects: {
-          myEffect() {
+          async myEffect() {
             assert(isReadOnly(this));
 
             assert(isReadOnly(this.effects));
@@ -260,7 +260,7 @@ describe("withStore", () => {
 
             expect(typeof this.resetState).toBe("function");
             this.state.myEntry = "thud";
-            this.resetState();
+            await this.resetState();
             expect(this.state.myEntry).toBe("bar");
 
             expect(ownProps(this.state)).toEqual(["myEntry"]);
