@@ -292,7 +292,7 @@ describe("withStore", () => {
       return effects.foo();
     });
 
-    it("Cannot set new state entries", () => {
+    it("cannot set new state entries", () => {
       const { effects } = makeTestInstance({
         initialState: () => ({}),
         effects: {
@@ -307,7 +307,7 @@ describe("withStore", () => {
       return effects.myEffect();
     });
 
-    it("Cannot set computed entries", () => {
+    it("cannot set computed entries", () => {
       const { effects } = makeTestInstance({
         initialState: () => ({ a: 5 }),
         effects: {
