@@ -297,7 +297,9 @@ describe("withStore", () => {
         initialState: () => ({}),
         effects: {
           myEffect() {
-            expect(() => (this.state.foo = "foo")).toThrow(TypeError);
+            expect(() => {
+              this.state.foo = "foo";
+            }).toThrow(TypeError);
             expect(ownProps(this.state)).toEqual([]);
           },
         },
@@ -310,9 +312,9 @@ describe("withStore", () => {
         initialState: () => ({ a: 5 }),
         effects: {
           myEffect() {
-            expect(() => (this.state.double = ({ a }) => a * a)).toThrow(
-              TypeError
-            );
+            expect(() => {
+              this.state.double = 6;
+            }).toThrow(TypeError);
             expect(this.state.double).toBe(10);
           },
         },
