@@ -291,5 +291,38 @@ describe("withStore", () => {
       });
       return effects.foo();
     });
+
+    it("cannot set new state entries", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({}),
+        effects: {
+          myEffect() {
+            expect(() => {
+              this.state.foo = "foo";
+            }).toThrow(TypeError);
+            expect(ownProps(this.state)).toEqual([]);
+          },
+        },
+      });
+      return effects.myEffect();
+    });
+
+    it("cannot set computed entries", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({ a: 5 }),
+        effects: {
+          myEffect() {
+            expect(() => {
+              this.state.double = 6;
+            }).toThrow(TypeError);
+            expect(this.state.double).toBe(10);
+          },
+        },
+        computed: {
+          double: ({ a }) => a * 2,
+        },
+      });
+      return effects.myEffect();
+    });
   });
 });
