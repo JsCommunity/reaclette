@@ -288,5 +288,19 @@ describe("withStore", () => {
       });
       return effects.foo();
     });
+
+    it("can reset state", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({ qux: "qux" }),
+        effects: {
+          async foo() {
+            this.state.qux = "baz";
+            this.resetState();
+            expect(this.state.qux).toBe("qux");
+          },
+        },
+      });
+      return effects.foo();
+    });
   });
 });
