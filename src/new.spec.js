@@ -341,8 +341,10 @@ describe("withStore", () => {
         },
       });
 
+      const _promise = effects.foo();
+      expect(getState().qux).toBe("qux");
       resolve();
-      await effects.foo();
+      await _promise;
       expect(getState().qux).toBe("fred");
     });
   });
