@@ -363,7 +363,7 @@ describe("withStore", () => {
 
       // wait for foo to be finished
       await pFoo;
-      expect(getState().qux).toBe("fred");
+      expect(getState().qux).toBe(2);
     });
   });
 });
