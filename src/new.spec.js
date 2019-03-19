@@ -320,5 +320,46 @@ describe("withStore", () => {
       });
       return effects.myEffect();
     });
+
+    it("can be async", async () => {
+      let resolve;
+      // eslint-disable-next-line promise/param-names
+      const promise = new Promise(resolve_ => {
+        resolve = resolve_;
+      });
+      const { effects, getState } = makeTestInstance({
+        initialState: () => ({ qux: 0 }),
+        effects: {
+          async foo() {
+            ++this.state.qux;
+
+            // signal the caller that we have made the first change
+            resolve();
+
+            // wait for the caller to make us continue
+            //
+            // eslint-disable-next-line promise/param-names
+            await new Promise(resolve_ => {
+              resolve = resolve_;
+            });
+
+            ++this.state.qux;
+          },
+        },
+      });
+
+      const pFoo = effects.foo();
+
+      // wait for foo to have done the first change
+      await promise;
+      expect(getState().qux).toBe(1);
+
+      // unlock foo
+      resolve();
+
+      // wait for foo to be finished
+      await pFoo;
+      expect(getState().qux).toBe(2);
+    });
   });
 });
