@@ -328,7 +328,7 @@ describe("withStore", () => {
     it("can be async", async () => {
       let resolve;
       // eslint-disable-next-line promise/param-names
-      let promise = new Promise(resolve_ => {
+      const promise = new Promise(resolve_ => {
         resolve = resolve_;
       });
       const { effects, getState } = makeTestInstance({
