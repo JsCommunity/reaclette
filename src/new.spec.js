@@ -4,7 +4,7 @@
 
 const assert = require("assert");
 const { createElement } = require("react");
-const { configure, mount } = require("enzyme");
+const { configure, mount, shallow } = require("enzyme");
 
 const CircularComputedError = require("./_CircularComputedError");
 const { withStore } = require("./");
@@ -91,6 +91,14 @@ describe("withStore", () => {
       const props = renderArgs[1];
       assert(isReadOnly(props));
       expect(ownProps(props)).toEqual(["bar"]);
+    });
+
+    it("returns the React tree to render", () => {
+      const wrapper = shallow(
+        createElement(withStore({}, () => createElement("h1")), {})
+      );
+      expect(wrapper.getElement()).toEqual(createElement("h1"));
+      expect(wrapper.html()).toEqual("<h1></h1>");
     });
   });
 
