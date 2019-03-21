@@ -1,7 +1,5 @@
 "use strict";
 
-const React = require("react");
-
 const CircularComputedError = require("./_CircularComputedError");
 
 const {
@@ -50,12 +48,12 @@ class Spy {
   }
 }
 
-module.exports = ({ Component }) => {
+module.exports = ({ Component, PureComponent = Component }) => {
   function withStore({ computed, effects, initialState }, fn) {
     const computedKeys = computed === undefined ? EMPTY_A : keys(computed);
     const effectsKeys = effects === undefined ? EMPTY_A : keys(effects);
 
-    return class Decorated extends React.PureComponent {
+    return class Decorated extends PureComponent {
       constructor(props) {
         super(props);
 
