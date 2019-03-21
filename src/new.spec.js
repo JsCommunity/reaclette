@@ -95,10 +95,9 @@ describe("withStore", () => {
 
     it("returns the React tree to render", () => {
       const wrapper = shallow(
-        createElement(withStore({}, () => createElement("h1")), {})
+        createElement(withStore({}, () => createElement("h1")))
       );
       expect(wrapper.getElement()).toEqual(createElement("h1"));
-      expect(wrapper.html()).toEqual("<h1></h1>");
     });
   });
 
