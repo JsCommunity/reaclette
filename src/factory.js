@@ -188,11 +188,13 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 );
               }
               // only local, non-computed state entries are enumerable
+              const roDescriptor = {
+                enumerable: true,
+                get: () => state[k],
+              };
+              stateDescriptors[k] = roDescriptor;
               writableStateDescriptors[k] = {
-                ...(stateDescriptors[k] = {
-                  enumerable: true,
-                  get: () => state[k],
-                }),
+                ...roDescriptor,
                 set: value => {
                   state = { ...state, [k]: value };
                   dispatch();
