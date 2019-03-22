@@ -8,9 +8,6 @@ const __PROD__ = NODE_ENV === "production";
 const __TEST__ = NODE_ENV === "test";
 
 const configs = {
-  "@babel/plugin-proposal-pipeline-operator": {
-    proposal: "minimal",
-  },
   "@babel/preset-env"(pkg) {
     return {
       debug: !__TEST__,
@@ -30,7 +27,7 @@ const configs = {
           }
           targets.node = node;
         }
-        return { browsers: pkg.browserslist, node };
+        return targets;
       })(),
       useBuiltIns: "@babel/polyfill" in (pkg.dependencies || {}) && "usage",
     };
