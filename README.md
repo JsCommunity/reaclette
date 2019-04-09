@@ -101,6 +101,7 @@ withStore({
   effects: {
     loadData: async function() {
       const { state } = this;
+      const { effects } = this;
       if (state.data !== undefined || state.loading) {
         return;
       }
@@ -109,6 +110,7 @@ withStore({
       try {
         state.data = await fetchData();
       } finally {
+        await effects.incrementCounter()
         state.loading = false;
       }
     },
