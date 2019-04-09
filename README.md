@@ -32,25 +32,28 @@ import React from "react";
 import { render } from "react-dom";
 import { withStore } from "reaclette";
 
-const Component = withStore({
-  initialState: props => ({ counter: 0 }),
-  effects: {
-    addOne() {
-      this.state.counter += 1;
+const Component = withStore(
+  {
+    initialState: props => ({ counter: 0 }),
+    effects: {
+      addOne() {
+        this.state.counter += 1;
+      },
+    },
+    computed: {
+      square: (state, props) => state.counter * state.counter,
     },
   },
-  computed: {
-    square: (state, props) => state.counter * state.counter,
-  },
-})(({ effects, state }, props) => (
-  <div>
-    <p>Our counter is at: {state.counter}</p>
-    <p>Its squared value is: {state.square}</p>
-    <p>
-      <button onClick={effects.addOne}>Add one</button>
-    </p>
-  </div>
-));
+  ({ effects, state }, props) => (
+    <div>
+      <p>Our counter is at: {state.counter}</p>
+      <p>Its squared value is: {state.square}</p>
+      <p>
+        <button onClick={effects.addOne}>Add one</button>
+      </p>
+    </div>
+  )
+);
 
 render(<Component />, document.body);
 ```
@@ -145,25 +148,28 @@ They are automatically (re-)computed when necessary.
 Compute functions can be async which is extremely useful to fetch data:
 
 ```js
-const CitySelector = withStore({
-  computed: {
-    // the computed is undefined in the render before the promise settles
-    //
-    // rejections are not handled and will possibly trigger an
-    // unhandledRejection event on the window object, the computed will stay
-    // undefined
-    async cities({ country }) {
-      const response = await fetch(`/countries/${state.country}/cities`);
-      return response.json();
+const CitySelector = withStore(
+  {
+    computed: {
+      // the computed is undefined in the render before the promise settles
+      //
+      // rejections are not handled and will possibly trigger an
+      // unhandledRejection event on the window object, the computed will stay
+      // undefined
+      async cities({ country }) {
+        const response = await fetch(`/countries/${state.country}/cities`);
+        return response.json();
+      },
     },
   },
-})(({ onChange, state, effects, value }) => (
-  <select onChange={onChange} value={value}>
-    {state.cities !== undefined
-      ? state.cites.map(city => <option>{city}</option>)
-      : null}
-  </select>
-));
+  ({ onChange, state, effects, value }) => (
+    <select onChange={onChange} value={value}>
+      {state.cities !== undefined
+        ? state.cites.map(city => <option>{city}</option>)
+        : null}
+    </select>
+  )
+);
 ```
 
 Even though computed can use state and props, they don't have to:
@@ -187,12 +193,13 @@ This function resets the state by calling `initialState` with the current proper
 This pseudo-effect is passed as a property by `injectState`:
 
 ```js
-const Component = withStore({
-  initialState: () => ({}),
-  effects: {},
-})(({ effects, state, resetState }) => (
-  <form onReset={resetState}>// ...</form>
-));
+const Component = withStore(
+  {
+    initialState: () => ({}),
+    effects: {},
+  },
+  ({ effects, state, resetState }) => <form onReset={resetState}>// ...</form>
+);
 ```
 
 And also available from effects via their context:
