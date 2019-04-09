@@ -184,8 +184,6 @@ Even though computed can use state and props, they don't have to:
 }
 ```
 
-> Note: Computed values cannot access themselves, otherwise `Reaclette` will throw.
-
 #### `resetState()`
 
 This function resets the state by calling `initialState` with the current properties of the decorated component.
