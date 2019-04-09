@@ -64,7 +64,7 @@ render(<Component />, document.body);
 import { withStore } from "reaclette";
 ```
 
-### `withStore(options, (...args) => Component)`
+### `withStore(options, ({ state, effects }, props) => Component)`
 
 Create a decorator that associates a React component with a store.
 
