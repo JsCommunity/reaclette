@@ -139,7 +139,7 @@ const Component = withStore(
   },
   (store, props) => (
     <div>
-      {state.loading ? (
+      {store.state.loading ? (
         "Loading..."
       ) : (
         <pre>{JSON.stringify(store.state.data, null, " ")}</pre>
