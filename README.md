@@ -44,12 +44,12 @@ const Component = withStore(
       square: (state, props) => state.counter * state.counter,
     },
   },
-  ({ effects, state }, props) => (
+  (store, props) => (
     <div>
-      <p>Our counter is at: {state.counter}</p>
-      <p>Its squared value is: {state.square}</p>
+      <p>Our counter is at: {store.state.counter}</p>
+      <p>Its squared value is: {store.state.square}</p>
       <p>
-        <button onClick={effects.addOne}>Add one</button>
+        <button onClick={store.effects.addOne}>Add one</button>
       </p>
     </div>
   )
@@ -64,13 +64,35 @@ render(<Component />, document.body);
 import { withStore } from "reaclette";
 ```
 
-### `withStore(options, ({ state, effects }, props) => Component)`
+### `withStore(options, renderFunction)`
 
 Create a decorator that associates a React component with a store.
 
-`options` is an object which can contain the following properties.
+`renderFunction`
 
-#### `initialState(props) => object`
+A function that receives `store` and `props` in parameters and returns a `React node` like so:
+
+```js
+(store, props) => ReactNode;
+```
+
+- `store`
+  Is an object containing the following properties:
+
+  - [`state`](#initial-state)
+  - [`effects`](#effects)
+  - [`resetState`](#reset-state)
+
+- `props`
+  Passed inputs to React node
+
+`options`
+
+Is an object which can contain the following properties:
+
+#### Initial state
+
+`initialState(props) => object`
 
 This function returns the initial state of store, which can be computed from the properties of the decorated component.
 
@@ -80,7 +102,9 @@ This function returns the initial state of store, which can be computed from the
 }
 ```
 
-#### `effects: { [string]: Effect }`
+#### Effects
+
+`effects: { [string]: Effect }`
 
 These functions can be called from application code and can do side-effects and/or mutate the state.
 
@@ -89,39 +113,75 @@ When called, an effect is provided with one or more arguments: a reference to ot
 Effects can access effects, state (read and write) and props (at the time the effect was called) via `this`, which is extremely
 handy for async effects:
 
-An effect returns always a promise resolving to `undefined` or `null`.
-
 ```js
-withStore({
-  initialState: () => ({
-    counter: 0,
-    data: undefined,
-    loading: false,
-  }),
-  effects: {
-    loadData: async function() {
-      const { state } = this;
-      const { effects } = this;
-      if (state.data !== undefined || state.loading) {
-        return;
-      }
+const Component = withStore(
+  {
+    initialState: () => ({
+      data: undefined,
+      loading: false,
+    }),
+    effects: {
+      loadData: async function() {
+        const { state } = this;
+        const { effects } = this;
+        if (state.data !== undefined || state.loading) {
+          return;
+        }
 
-      state.loading = true;
-      try {
-        state.data = await fetchData();
-      } finally {
-        await effects.incrementCounter()
-        state.loading = false;
-      }
-    },
-    incrementCounter() {
-      this.state.counter += 1;
-    },
-    onInputChange(event) {
-      this.state.counter = +event.target.value;
+        state.loading = true;
+        try {
+          state.data = await fetchData();
+        } finally {
+          state.loading = false;
+        }
+      },
     },
   },
-});
+  (store, props) => (
+    <div>
+      {state.loading ? (
+        "Loading..."
+      ) : (
+        <pre>{JSON.stringify(store.state.data, null, " ")}</pre>
+      )}
+    </div>
+  )
+);
+
+render(<Component />, document.body);
+```
+
+Effects are always asynchronous; therefore, they must always be awaited.
+
+```js
+const Component = withStore(
+  {
+    initialState: props => ({ counter: 0 }),
+    effects: {
+      async addOne() {
+        const { state } = this;
+        const { effects } = this;
+        state.counter += 1;
+        if (state.counter > 5) {
+          await effects.addBonus();
+        }
+      },
+      addBonus() {
+        this.state.counter += 5;
+      },
+    },
+  },
+  (store, props) => (
+    <div>
+      <p>Our counter is at: {store.state.counter}</p>
+      <p>
+        <button onClick={store.effects.addOne}>Add one</button>
+      </p>
+    </div>
+  )
+);
+
+render(<Component />, document.body);
 ```
 
 There are two special effects:
@@ -131,7 +191,9 @@ There are two special effects:
 
 Note that these effects are **not called** on server side!
 
-#### `computed: { [string]: Compute }`
+#### Computed
+
+`computed: { [string]: Compute }`
 
 _Computeds_ are lazy values derived from the state and the properties of the decorated component.
 
@@ -164,14 +226,16 @@ const CitySelector = withStore(
       },
     },
   },
-  ({ onChange, state, effects, value }) => (
-    <select onChange={onChange} value={value}>
-      {state.cities !== undefined
-        ? state.cites.map(city => <option>{city}</option>)
+  (store, props) => (
+    <select onChange={props.onChange} value={props.value}>
+      {store.state.cities !== undefined
+        ? store.state.cites.map(city => <option>{city}</option>)
         : null}
     </select>
   )
 );
+
+render(<CitySelector />, document.body);
 ```
 
 Even though computed can use state and props, they don't have to:
@@ -184,7 +248,7 @@ Even though computed can use state and props, they don't have to:
 }
 ```
 
-#### `resetState()`
+#### Reset state
 
 This function resets the state by calling `initialState` with the current properties of the decorated component.
 
@@ -198,7 +262,7 @@ const Component = withStore(
     initialState: () => ({}),
     effects: {},
   },
-  ({ effects, state, resetState }) => <form onReset={resetState}>// ...</form>
+  (store, props) => <form onReset={store.resetState}>{/* ... */}</form>
 );
 ```
 
