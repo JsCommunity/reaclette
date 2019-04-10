@@ -79,7 +79,7 @@ A function that receives `store` and `props` in parameters and returns a `React 
 - `store`
   Is an object containing the following properties:
 
-  - [`state`](#initial-state)
+  - `state`
   - [`effects`](#effects)
   - [`resetState`](#reset-state)
 
@@ -269,13 +269,17 @@ const Component = withStore(
 And also available from effects via their context:
 
 ```js
-const withState = withStore({
-  // ...
-  effects: {
-    async myEffect () {
-       await this.resetState()
-    }
-})
+const Component = withStore(
+  {
+    // ...
+    effects: {
+      async myEffect() {
+        await this.resetState();
+      },
+    },
+  },
+  (store, props) => <button onClick={store.effects.myEffect}>Reset</button>
+);
 ```
 
 ## Recipes
