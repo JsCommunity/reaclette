@@ -3,6 +3,8 @@ module.exports = {
     // standard configuration
     "standard",
 
+    "plugin:compat/recommended",
+
     // https://github.com/mysticatea/eslint-plugin-node#-rules
     "plugin:node/recommended",
 
@@ -10,8 +12,6 @@ module.exports = {
     "prettier",
     "prettier/standard",
   ],
-
-  parser: "babel-eslint",
 
   rules: {
     // prefer let/const over var
@@ -28,5 +28,9 @@ module.exports = {
 
     // uncomment if you are using a builder like Babel
     "node/no-unsupported-features/es-syntax": "off",
+  },
+
+  settings: {
+    polyfills: ["promises"],
   },
 };

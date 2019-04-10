@@ -1,274 +1,195 @@
+"use strict";
+
 /* eslint-env jest */
-import CircularComputedError from "./_CircularComputedError";
-import InvalidEntryError from "./_InvalidEntryError";
 
-require("raf/polyfill");
+const assert = require("assert");
 const { createElement } = require("react");
-const { configure, mount } = require("enzyme");
+const { configure, mount, shallow } = require("enzyme");
 
-const { injectState, provideState } = require("./");
+const CircularComputedError = require("./_CircularComputedError");
+const { withStore } = require("./");
 
 configure({ adapter: new (require("enzyme-adapter-react-16"))() });
 
 const makeTestInstance = (opts, props) => {
   let renderCount = 0;
-  const Child = () => {
-    ++renderCount;
-    return null;
-  };
+  let renderArgs;
   const parent = mount(
     createElement(
-      provideState({
-        ...opts,
-        effects: {
-          ...opts.effects,
-          _setState: (_, props) => _ => props,
+      withStore(
+        {
+          ...opts,
+          effects: {
+            ...opts.effects,
+            _setState(props) {
+              Object.assign(this.state, props);
+            },
+          },
         },
-      })(injectState(Child)),
+        (...args) => {
+          ++renderCount;
+          renderArgs = args;
+          return null;
+        }
+      ),
       props
     )
   );
-  const child = parent.find(Child);
   return {
-    effects: child.prop("effects"),
-    getInjectedState: () => child.prop("state"),
-    getParentState: () => parent.instance()._state,
+    effects: renderArgs[0].effects,
     getParentProps: () => parent.instance().props,
+    getRenderArgs: () => renderArgs,
     getRenderCount: () => renderCount,
-    resetState: child.prop("resetState"),
+    getState: () => renderArgs[0].state,
     setParentProps: parent.setProps.bind(parent),
   };
 };
 
-const noop = () => {};
+const ownProps = Object.getOwnPropertyNames;
 
-describe("provideState", () => {
-  describe("initialState", () => {
-    it("is called with the props to create the initial state", () => {
-      const props = { bar: "baz" };
-      expect(
-        makeTestInstance(
-          {
-            initialState: (...args) => {
-              expect(args).toEqual([props]);
-              return { foo: "bar" };
-            },
-          },
-          props
-        ).getInjectedState()
-      ).toEqual({ foo: "bar" });
-    });
+const isReadOnly = object =>
+  !Object.isExtensible(object) &&
+  ownProps(object).every(name => {
+    const descriptor = Object.getOwnPropertyDescriptor(object, name);
+    return (
+      !descriptor.configurable &&
+      (descriptor.set === undefined || !descriptor.writable)
+    );
   });
 
-  describe("resetState", () => {
-    it("is called to reset the state to its initial values in effects", async () => {
-      const props = { bar: "baz" };
-      const { effects, getInjectedState } = makeTestInstance(
+describe("withStore", () => {
+  describe("render function", () => {
+    it("receives readOnly store and props", async () => {
+      const _props = { bar: "baz" };
+      const { getRenderArgs } = makeTestInstance(
         {
-          initialState: () => ({
-            foo: "bar",
-          }),
+          initialState: () => ({ myEntry: "bar" }),
           effects: {
-            changeState(_, value) {
-              return { foo: value };
-            },
-            async reset() {
-              await this.resetState();
+            myEffect() {
+              this.state.myEntry = "baz";
             },
           },
         },
-        props
-      );
-      await effects.changeState("foo");
-      expect(getInjectedState()).toEqual({ foo: "foo" });
-      await effects.reset();
-      expect(getInjectedState()).toEqual({ foo: "bar" });
-    });
-
-    it("is called to reset the state to its initial values in child", async () => {
-      const props = { bar: "baz" };
-      const { effects, getInjectedState, resetState } = makeTestInstance(
-        {
-          initialState: () => ({
-            foo: "bar",
-          }),
-          effects: {
-            changeState(_, value) {
-              return { foo: value };
-            },
-          },
-        },
-        props
+        _props
       );
 
-      await effects.changeState("foo");
-      expect(getInjectedState()).toEqual({ foo: "foo" });
-      await resetState();
-      expect(getInjectedState()).toEqual({ foo: "bar" });
-    });
-  });
+      const renderArgs = getRenderArgs();
 
-  describe("effects", () => {
-    it("are called with other effects followed by arguments", () => {
-      const args = ["bar", "baz"];
-      const { effects } = makeTestInstance({
-        effects: {
-          foo: (first, ...rest) => {
-            expect(first).toBe(effects);
-            expect(rest).toEqual(args);
-          },
-        },
-      });
-      return effects.foo(...args);
-    });
+      const store = renderArgs[0];
+      assert(isReadOnly(store));
 
-    it("are called with effects, props and state in context", () => {
-      const { effects, getParentProps } = makeTestInstance({
-        initialState: () => ({ foo: "bar" }),
-        effects: {
-          foo() {
-            expect(this.effects).toBe(effects);
-            expect(this.props).toBe(getParentProps());
-            expect(this.state).toEqual({ foo: "bar" });
-          },
-        },
-      });
-      return effects.foo();
+      const { effects, resetState, state } = store;
+
+      assert(isReadOnly(effects));
+      expect(ownProps(effects)).toEqual(["myEffect", "_setState"]);
+
+      expect(typeof resetState).toBe("function");
+
+      assert(isReadOnly(state));
+      expect(ownProps(state)).toEqual(["myEntry"]);
+
+      const props = renderArgs[1];
+      assert(isReadOnly(props));
+      expect(ownProps(props)).toEqual(["bar"]);
     });
 
-    it("always returns a Promise to undefined", () => {
-      const { effects } = makeTestInstance({
-        effects: {
-          foo: () => {},
-        },
-      });
-      return effects.foo().then(value => {
-        expect(value).toBe(undefined);
-      });
-    });
-
-    it("throws if an invalid state entry is assigned", () => {
-      const { effects } = makeTestInstance({
-        initialState: () => ({}),
-        effects: {
-          foo() {
-            return { qux: 3 };
-          },
-        },
-      });
-
-      return expect(effects.foo()).rejects.toThrowError(
-        new InvalidEntryError("qux")
+    it("returns the React tree to render", () => {
+      const wrapper = shallow(
+        createElement(withStore({}, () => createElement("h1")))
       );
-    });
-
-    it("sync state changes are batched", async () => {
-      const { effects, getInjectedState, getRenderCount } = makeTestInstance({
-        initialState: () => ({ foo: 0 }),
-        effects: {
-          foo() {
-            this.state.foo = 1;
-            this.state.foo = 2;
-          },
-        },
-      });
-
-      expect(getRenderCount()).toBe(1);
-
-      // access this state to make sure children is rerendered when it changes
-      expect(getInjectedState().foo).toBe(0);
-
-      await effects.foo();
-
-      expect(getRenderCount()).toBe(2);
+      expect(wrapper.getElement()).toEqual(createElement("h1"));
     });
   });
 
   describe("computed", () => {
-    const sum = jest.fn(({ foo }, { bar }) => foo + bar);
-    const circularComputed = jest.fn(({ circularComputed }) => {});
-    const throwComputed = jest.fn((_, { baz }) => {
-      if (baz > 20) {
-        throw new Error("Not supported value");
-      }
-      return baz * 2;
-    });
-    const { effects, getInjectedState, setParentProps } = makeTestInstance(
-      {
-        initialState: () => ({ foo: 1, qux: 2 }),
-        computed: {
-          sum,
-          circularComputed,
-          throwComputed,
-        },
-      },
-      { bar: 3, baz: 4 }
-    );
-
-    it("is not computed before access", () => {
-      getInjectedState();
-      expect(sum).not.toHaveBeenCalled();
-    });
-
-    it("returns the result of the computation", () => {
-      expect(getInjectedState().sum).toBe(4);
-      expect(sum).toHaveBeenCalledTimes(1);
-    });
-
-    it("is not recomputed when its inputs do not change ", () => {
-      setParentProps({ baz: 5 });
-      return effects._setState({ qux: 3 }).then(() => {
-        noop(getInjectedState().sum);
-        expect(sum).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    it("is recomputed when its state inputs change", () => {
-      return effects._setState({ foo: 2 }).then(() => {
-        expect(getInjectedState().sum).toBe(5);
-        expect(sum).toHaveBeenCalledTimes(2);
-      });
-    });
-
-    it("is recomputed when its props inputs change", () => {
-      setParentProps({ bar: 4 });
-      expect(getInjectedState().sum).toBe(6);
-      expect(sum).toHaveBeenCalledTimes(3);
-    });
-
-    it("throws when a computed calls its self", () => {
-      expect(() => {
-        return getInjectedState().circularComputed;
-      }).toThrowError(new CircularComputedError("circularComputed"));
-    });
-
-    it("throws when a computed is defined both in state and computed", () => {
-      expect(() => {
-        makeTestInstance({
-          initialState: () => ({ foo: 0 }),
+    it("receive read-only state and props", () => {
+      const props = { qux: "qux" };
+      const { getState } = makeTestInstance(
+        {
+          initialState: () => ({
+            foo: "foo",
+          }),
           computed: {
-            foo: () => {},
+            bar: () => "bar",
+            baz(state, props) {
+              assert(isReadOnly(state));
+              assert(isReadOnly(props));
+
+              expect(state.foo).toBe("foo");
+              expect(state.bar).toBe("bar");
+              expect(props.qux).toBe("qux");
+
+              return "baz";
+            },
           },
-        });
-      }).toThrowError(
-        new TypeError(`conflict: "foo" is defined both in state and computed`)
+        },
+        props
       );
+
+      expect(getState().baz).toBe("baz");
     });
 
-    it("returns undefined when a computed throws on the first call", () => {
-      setParentProps({ baz: 21 });
-      const res = getInjectedState().throwComputed;
-      expect(res).toBe(undefined);
+    it("cannot access itself", () => {
+      const { getState } = makeTestInstance({
+        computed: {
+          circular: ({ circular }) => {},
+        },
+      });
+
+      expect(() => getState().circular).toThrow(CircularComputedError);
     });
 
-    it("returns previous value when a computed throws", () => {
-      setParentProps({ baz: 5 });
-      expect(getInjectedState().throwComputed).toBe(10);
-      setParentProps({ baz: 21 });
-      expect(getInjectedState().throwComputed).toBe(10);
+    it("are not called when its state/props dependencies do not change", async () => {
+      const sum = jest.fn(({ a }, { b }) => a + b);
+      const props = { b: 2, c: 9 };
+      const { effects, getState, setParentProps } = makeTestInstance(
+        {
+          initialState: () => ({ a: 1, d: 4 }),
+          computed: {
+            sum,
+          },
+        },
+        props
+      );
+
+      expect(getState().sum).toBe(3);
+      expect(sum.mock.calls.length).toBe(1);
+
+      setParentProps({ c: 8 });
+      await effects._setState({ d: 8 });
+
+      expect(getState().sum).toBe(3);
+      expect(sum.mock.calls.length).toBe(1);
     });
 
-    it("can returns a promise", async () => {
+    it("is called when its state/props dependencies change", async () => {
+      const sum = jest.fn(({ a }, { b }) => a + b);
+      const props = { b: 2, c: 9 };
+      const { effects, getState, setParentProps } = makeTestInstance(
+        {
+          initialState: () => ({ a: 1, d: 4 }),
+          computed: {
+            sum,
+          },
+        },
+        props
+      );
+
+      expect(getState().sum).toBe(3);
+      expect(sum.mock.calls.length).toBe(1);
+
+      await effects._setState({ a: 2 });
+
+      expect(getState().sum).toBe(4);
+      expect(sum.mock.calls.length).toBe(2);
+
+      setParentProps({ b: 3 });
+
+      expect(getState().sum).toBe(5);
+      expect(sum.mock.calls.length).toBe(3);
+    });
+
+    describe("async", () => {
       let promise, resolve;
       const reset = () => {
         // eslint-disable-next-line promise/param-names
@@ -276,34 +197,176 @@ describe("provideState", () => {
           resolve = resolve_;
         });
       };
-      reset();
 
-      const { getInjectedState, setParentProps } = makeTestInstance(
-        {
-          computed: { value: (_, { foo }) => promise },
+      let getState, setParentProps;
+      beforeEach(() => {
+        ({ getState, setParentProps } = makeTestInstance(
+          {
+            computed: { value: (_, { foo }) => promise },
+          },
+          { foo: 1 }
+        ));
+      });
+
+      it("returns undefined before fulfilment then fulfilment value", async () => {
+        reset();
+
+        expect(getState().value).toBe(undefined);
+
+        resolve("foo");
+        await promise;
+
+        expect(getState().value).toBe("foo");
+      });
+
+      it("follows the latest computation when dependencies change", async () => {
+        // trigger computed
+        reset();
+        expect(getState().value).toBe(undefined);
+
+        const prevPromise = promise;
+        const prevResolve = resolve;
+
+        reset();
+        setParentProps({ foo: 2 });
+        expect(getState().value).toBe(undefined);
+
+        prevResolve("foo");
+        await prevPromise;
+
+        expect(getState().value).toBe(undefined);
+
+        resolve("baz");
+        await promise;
+
+        expect(getState().value).toBe("baz");
+      });
+    });
+  });
+
+  describe("effects", () => {
+    it("receives the passed arguments", () => {
+      const args = ["bar", "baz"];
+      const { effects } = makeTestInstance({
+        effects: {
+          foo(...rest) {
+            expect(rest).toEqual(args);
+          },
         },
-        { foo: 1 }
-      );
+      });
+      return effects.foo(...args);
+    });
 
-      // trigger a first computation
-      expect(getInjectedState().value).toBe(undefined);
+    it("are called with read-only effects and props and resetState and writable state in context", () => {
+      const { effects, getParentProps } = makeTestInstance({
+        initialState: () => ({ myEntry: "bar" }),
+        effects: {
+          async myEffect() {
+            assert(isReadOnly(this));
 
-      const prevPromise = promise;
-      const prevResolve = resolve;
+            assert(isReadOnly(this.effects));
+            expect(ownProps(this.effects)).toEqual(["myEffect", "_setState"]);
 
-      // trigger a second computation
-      reset();
-      setParentProps({ foo: 2 });
-      expect(getInjectedState().value).toBe(undefined);
+            expect(ownProps(this.state)).toEqual(["myEntry"]);
+            expect(this.state.myEntry).toBe("bar");
+            this.state.myEntry = "baz";
+            expect(this.state.myEntry).toBe("baz");
 
-      // resolve them in reverse order
-      resolve("bar");
+            await this.resetState();
+            expect(this.state.myEntry).toBe("bar");
+
+            assert(isReadOnly(this.props));
+            expect(this.props).toBe(getParentProps());
+          },
+        },
+      });
+      return effects.myEffect();
+    });
+
+    it("can use other effects", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({ qux: "qux" }),
+        effects: {
+          async foo() {
+            await this.effects.bar();
+            expect(this.state.qux).toBe("fred");
+          },
+          bar() {
+            this.state.qux = "fred";
+          },
+        },
+      });
+      return effects.foo();
+    });
+
+    it("cannot set new state entries", () => {
+      const { effects } = makeTestInstance({
+        initialState: () => ({}),
+        effects: {
+          myEffect() {
+            assert(!Object.isExtensible(this.state));
+          },
+        },
+      });
+      return effects.myEffect();
+    });
+
+    it("cannot set computed entries", () => {
+      const { effects } = makeTestInstance({
+        effects: {
+          myEffect() {
+            expect(() => {
+              this.state.foo = "bar";
+            }).toThrow(TypeError);
+            expect(this.state.foo).toBe("foo");
+          },
+        },
+        computed: {
+          foo: () => "foo",
+        },
+      });
+      return effects.myEffect();
+    });
+
+    it("can be async", async () => {
+      let resolve;
+      // eslint-disable-next-line promise/param-names
+      const promise = new Promise(resolve_ => {
+        resolve = resolve_;
+      });
+      const { effects, getState } = makeTestInstance({
+        initialState: () => ({ qux: 0 }),
+        effects: {
+          async foo() {
+            ++this.state.qux;
+
+            // signal the caller that we have made the first change
+            resolve();
+
+            // wait for the caller to make us continue
+            //
+            // eslint-disable-next-line promise/param-names
+            await new Promise(resolve_ => {
+              resolve = resolve_;
+            });
+
+            ++this.state.qux;
+          },
+        },
+      });
+
+      const pFoo = effects.foo();
+
+      // wait for foo to have done the first change
       await promise;
-      prevResolve("foo");
-      await prevPromise;
+      expect(getState().qux).toBe(1);
 
-      // the last computation should win
-      expect(getInjectedState().value).toBe("bar");
+      // unlock foo
+      resolve();
+
+      // wait for foo to be finished
+      await pFoo;
+      expect(getState().qux).toBe(2);
     });
   });
 });

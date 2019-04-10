@@ -8,23 +8,26 @@ const __PROD__ = NODE_ENV === "production";
 const __TEST__ = NODE_ENV === "test";
 
 const configs = {
-  "@babel/plugin-proposal-decorators": {
-    legacy: true,
-  },
   "@babel/preset-env"(pkg) {
     return {
       debug: !__TEST__,
       loose: true,
       shippedProposals: true,
       targets: (() => {
+        const targets = {};
+        const browers = pkg.browserslist;
+        if (browers !== undefined) {
+          targets.browsers = browers;
+        }
         let node = (pkg.engines || {}).node;
         if (node !== undefined) {
           const trimChars = "^=>~";
           while (trimChars.includes(node[0])) {
             node = node.slice(1);
           }
-          return { node: node };
+          targets.node = node;
         }
+        return targets;
       })(),
       useBuiltIns: "@babel/polyfill" in (pkg.dependencies || {}) && "usage",
     };
