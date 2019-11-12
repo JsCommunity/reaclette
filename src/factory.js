@@ -97,6 +97,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
         static WrappedComponent =
           (ChildComponent != null && ChildComponent.WrappedComponent) ||
           ChildComponent;
+
         static wrapComponentWithState = wrapComponentWithState;
 
         static childContextTypes = contextTypes_;

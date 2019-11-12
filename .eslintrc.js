@@ -12,6 +12,9 @@ module.exports = {
   ],
 
   parser: "babel-eslint",
+  parserOptions: {
+    sourceType: "module",
+  },
 
   rules: {
     // prefer let/const over var
