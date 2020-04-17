@@ -122,6 +122,10 @@ describe("provideState", () => {
       return effects.foo(...args);
     });
 
+    describe("this.state", () => {
+      it.todo("can access parent state entries");
+    });
+
     it("are called with effects, props and state in context", () => {
       const { effects, getParentProps } = makeTestInstance({
         initialState: () => ({ foo: "bar" }),

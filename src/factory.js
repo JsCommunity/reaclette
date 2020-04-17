@@ -235,7 +235,9 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
           let effectsDescriptors;
           if (effects !== undefined) {
-            const writableState = seal(create(null, writableStateDescriptors));
+            const writableState = seal(
+              create(parentState, writableStateDescriptors)
+            );
 
             const setState = newState => {
               if (newState == null) {
