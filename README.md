@@ -59,7 +59,7 @@ render(<Parent />, document.body);
 ## API
 
 ```js
-import { provideState, injectState } from "reaclette";
+import { provideState, injectState, withState } from "reaclette";
 ```
 
 ### `provideState(options) => (Component => Component)`
@@ -216,6 +216,18 @@ const withState = provideState({
        await this.resetState()
     }
 })
+```
+
+### `withState(options, Component) => Component`
+
+Combine `provideState` with `injectState` to create a component which can use its own state:
+
+```js
+const MyComponent = withState({
+  // state definition
+}, ({ effects, state, resetState, ...props }) => (
+  // component definition
+))
 ```
 
 ## Recipes

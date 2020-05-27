@@ -357,5 +357,8 @@ module.exports = ({ Component, createElement, PropTypes }) => {
     return wrapComponentWithState;
   };
 
-  return { injectState, provideState };
+  const withState = (stateSpec, ChildComponent) =>
+    provideState(stateSpec)(injectState(ChildComponent));
+
+  return { injectState, provideState, withState };
 };
