@@ -309,5 +309,22 @@ describe("provideState", () => {
       // the last computation should win
       expect(getInjectedState().value).toBe("bar");
     });
+
+    it("can have a placeholder", async () => {
+      const { getInjectedState } = makeTestInstance({
+        computed: {
+          value: {
+            get: () => Promise.resolve(1),
+            placeholder: 0,
+          },
+        },
+      });
+
+      expect(getInjectedState().value).toBe(0);
+
+      await Promise.resolve();
+
+      expect(getInjectedState().value).toBe(1);
+    });
   });
 });

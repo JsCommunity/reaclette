@@ -176,6 +176,31 @@ const CitySelector = provideState({
 );
 ```
 
+You can specify a placeholder value, which will be used before the value is ready:
+
+```js
+const CitySelector = provideState({
+  computed: {
+    // the computed is [] in the render before the promise settles
+    cities: {
+      async get({ country }) {
+        const response = await fetch(`/countries/${state.country}/cities`);
+        return response.json();
+      },
+      placeholder: [],
+    },
+  },
+})(
+  injectState(({ onChange, state, effects, value }) => (
+    <select onChange={onChange} value={value}>
+      {state.cites.map(city => (
+        <option>{city}</option>
+      ))}
+    </select>
+  ))
+);
+```
+
 Even though computed can use state and props, they don't have to:
 
 ```js

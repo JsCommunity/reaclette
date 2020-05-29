@@ -127,8 +127,17 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             const stateAccessor = k => completeState[k];
 
             keys(computed).forEach(k => {
-              const c = computed[k];
-              let previousValue, propsProxy, propsSpy, stateProxy, stateSpy;
+              let c = computed[k];
+              let placeholder,
+                previousValue,
+                propsProxy,
+                propsSpy,
+                stateProxy,
+                stateSpy;
+              if (typeof c === "object") {
+                placeholder = c.placeholder;
+                c = c.get;
+              }
               writableStateDescriptors[k] = stateDescriptors[k] = {
                 get: () => {
                   if (propsProxy === undefined) {
@@ -145,7 +154,9 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                     });
                     seal(stateProxy);
                   } else if (propsSpy.upToDate() && stateSpy.upToDate()) {
-                    return isPromise(previousValue) ? undefined : previousValue;
+                    return isPromise(previousValue)
+                      ? placeholder
+                      : previousValue;
                   }
 
                   propsSpy.clear();
@@ -173,6 +184,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                       dispatch();
                     }
                   });
+                  return placeholder;
                 },
               };
             });
