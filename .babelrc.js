@@ -14,7 +14,6 @@ const configs = {
   "@babel/preset-env"(pkg) {
     return {
       debug: !__TEST__,
-      loose: true,
       shippedProposals: true,
       targets: (() => {
         let node = (pkg.engines || {}).node;
