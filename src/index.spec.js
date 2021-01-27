@@ -22,7 +22,7 @@ const makeTestInstance = (opts, props) => {
         ...opts,
         effects: {
           ...opts.effects,
-          _setState: (_, props) => (_) => props,
+          _setState: (props) => (_) => props,
         },
       })(injectState(Child)),
       props
@@ -69,7 +69,7 @@ describe("provideState", () => {
             foo: "bar",
           }),
           effects: {
-            changeState(_, value) {
+            changeState(value) {
               return { foo: value };
             },
             async reset() {
@@ -93,7 +93,7 @@ describe("provideState", () => {
             foo: "bar",
           }),
           effects: {
-            changeState(_, value) {
+            changeState(value) {
               return { foo: value };
             },
           },
@@ -109,12 +109,11 @@ describe("provideState", () => {
   });
 
   describe("effects", () => {
-    it("are called with other effects followed by arguments", () => {
+    it("are called with arguments", () => {
       const args = ["bar", "baz"];
       const { effects } = makeTestInstance({
         effects: {
-          foo: (first, ...rest) => {
-            expect(first).toBe(effects);
+          foo: (...rest) => {
             expect(rest).toEqual(args);
           },
         },

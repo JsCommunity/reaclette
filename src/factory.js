@@ -281,15 +281,14 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 try {
                   return Promise.resolve(
                     setState(
-                      e.call(
+                      e.apply(
                         seal({
                           effects: this._effects,
                           props: this.props,
                           resetState: this._resetState,
                           state: writableState,
                         }),
-                        this._effects,
-                        ...args
+                        args
                       )
                     )
                   );

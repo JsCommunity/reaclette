@@ -82,7 +82,7 @@ This function returns the initial state of store, which can be computed from the
 
 These functions can be called from application code (see `injectState`) and can do side-effects and/or mutate the state.
 
-When called, an effect is provided with one or more arguments: a reference to other effects and any arguments passed to the effect from the application code.
+When called, an effect is provided with any arguments passed to the effect from the application code.
 
 An effect can return:
 
@@ -94,8 +94,8 @@ An effect can return:
 ```js
 {
   effects: {
-    incrementCounter: (effects) => (state, props) => ({ counter: state.counter + 1 }),
-    onInputChange: (effects, event) => ({ counter: +event.target.value }),
+    incrementCounter: () => (state, props) => ({ counter: state.counter + 1 }),
+    onInputChange: (event) => ({ counter: +event.target.value }),
   }
 }
 ```
@@ -285,10 +285,10 @@ export default provideState({
     familyName: "Harriman",
   }),
   effects: {
-    onChangeGiven: (_, { target: { value } }) => (state) => ({
+    onChangeGiven: ({ target: { value } }) => (state) => ({
       givenName: value,
     }),
-    onChangeFamily: (_, { target: { value } }) => (state) => ({
+    onChangeFamily: ({ target: { value } }) => (state) => ({
       familyName: value,
     }),
   },
