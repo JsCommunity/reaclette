@@ -34,7 +34,9 @@ import { injectState, provideState } from "reaclette";
 const wrapComponentWithState = provideState({
   initialState: () => ({ counter: 0 }),
   effects: {
-    addOne: () => (state, props) => ({ counter: state.counter + 1 }),
+    addOne() {
+      this.state += 1;
+    },
   },
   computed: {
     square: (state, props) => state.counter * state.counter,
@@ -84,23 +86,20 @@ These functions can be called from application code (see `injectState`) and can 
 
 When called, an effect is provided with any arguments passed to the effect from the application code.
 
-An effect can return:
-
-1. nothing (`undefined` or `null`)
-2. an object containing new properties to merge in the state
-3. a promise resolving to one of the above
-4. a function which receives the state and the props then returns one of the above
-
 ```js
 {
   effects: {
-    incrementCounter: () => (state, props) => ({ counter: state.counter + 1 }),
-    onInputChange: (event) => ({ counter: +event.target.value }),
+    incrementCounter() {
+      this.state.counter += 1;
+    },
+    onInputChange(event) {
+      this.state.counter = +event.target.value;
+    },
   }
 }
 ```
 
-Effects can also access effects, state (read and write) and props (at the time the effect was called) via `this`, which is extremely
+Effects can access effects, state (read and write) and props (at the time the effect was called) via `this`, which is extremely
 handy for async effects:
 
 ```js
@@ -110,7 +109,7 @@ provideState({
     loading: false,
   }),
   effects: {
-    loadData: async function () {
+    async loadData() {
       const { state } = this;
       if (state.data !== undefined || state.loading) {
         return;
@@ -126,6 +125,8 @@ provideState({
   },
 });
 ```
+
+`this.setState({ name1: value1, name2: value2 })` can also be used to change multiple state entries atomically.
 
 There are two special effects:
 
@@ -285,12 +286,12 @@ export default provideState({
     familyName: "Harriman",
   }),
   effects: {
-    onChangeGiven: ({ target: { value } }) => (state) => ({
-      givenName: value,
-    }),
-    onChangeFamily: ({ target: { value } }) => (state) => ({
-      familyName: value,
-    }),
+    onChangeGiven({ target: { value } }) {
+      this.state.givenName = value;
+    },
+    onChangeFamily({ target: { value } }) {
+      this.state.familyName = value;
+    },
   },
   computed: {
     fullName: ({ givenName, familyName }) => `${givenName} ${familyName}`,

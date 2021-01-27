@@ -1,6 +1,5 @@
 /* eslint-env jest */
 import CircularComputedError from "./_CircularComputedError";
-import InvalidEntryError from "./_InvalidEntryError";
 
 require("raf/polyfill");
 const { createElement } = require("react");
@@ -22,7 +21,9 @@ const makeTestInstance = (opts, props) => {
         ...opts,
         effects: {
           ...opts.effects,
-          _setState: (props) => (_) => props,
+          _setState(props) {
+            this.setState(props);
+          },
         },
       })(injectState(Child)),
       props
@@ -69,9 +70,6 @@ describe("provideState", () => {
             foo: "bar",
           }),
           effects: {
-            changeState(value) {
-              return { foo: value };
-            },
             async reset() {
               await this.resetState();
             },
@@ -79,7 +77,7 @@ describe("provideState", () => {
         },
         props
       );
-      await effects.changeState("foo");
+      await effects._setState({ foo: "foo" });
       expect(getInjectedState()).toEqual({ foo: "foo" });
       await effects.reset();
       expect(getInjectedState()).toEqual({ foo: "bar" });
@@ -92,16 +90,11 @@ describe("provideState", () => {
           initialState: () => ({
             foo: "bar",
           }),
-          effects: {
-            changeState(value) {
-              return { foo: value };
-            },
-          },
         },
         props
       );
 
-      await effects.changeState("foo");
+      await effects._setState({ foo: "foo" });
       expect(getInjectedState()).toEqual({ foo: "foo" });
       await resetState();
       expect(getInjectedState()).toEqual({ foo: "bar" });
@@ -155,14 +148,12 @@ describe("provideState", () => {
         initialState: () => ({}),
         effects: {
           foo() {
-            return { qux: 3 };
+            this.state.qux = 3;
           },
         },
       });
 
-      return expect(effects.foo()).rejects.toThrowError(
-        new InvalidEntryError("qux")
-      );
+      return expect(effects.foo()).rejects.toThrowError(TypeError);
     });
 
     it("sync state changes are batched", async () => {

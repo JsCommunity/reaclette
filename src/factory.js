@@ -252,19 +252,6 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             );
 
             const setState = (newState) => {
-              if (newState == null) {
-                return;
-              }
-
-              if (typeof newState === "function") {
-                return setState(newState(completeState, this.props));
-              }
-
-              const { then } = newState;
-              if (typeof then === "function") {
-                return then.call(newState, setState);
-              }
-
               Object.keys(newState).forEach((key) => {
                 if (!Object.prototype.hasOwnProperty.call(state, key)) {
                   throw new InvalidEntryError(key);
@@ -280,18 +267,17 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               const wrappedEffect = (...args) => {
                 try {
                   return Promise.resolve(
-                    setState(
-                      e.apply(
-                        seal({
-                          effects: this._effects,
-                          props: this.props,
-                          resetState: this._resetState,
-                          state: writableState,
-                        }),
-                        args
-                      )
+                    e.apply(
+                      seal({
+                        effects: this._effects,
+                        props: this.props,
+                        resetState: this._resetState,
+                        setState,
+                        state: writableState,
+                      }),
+                      args
                     )
-                  );
+                  ).then(noop);
                 } catch (error) {
                   return Promise.reject(error);
                 }
