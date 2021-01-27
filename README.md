@@ -110,7 +110,7 @@ provideState({
     loading: false,
   }),
   effects: {
-    loadData: async function() {
+    loadData: async function () {
       const { state } = this;
       if (state.data !== undefined || state.loading) {
         return;
@@ -169,7 +169,7 @@ const CitySelector = provideState({
   injectState(({ onChange, state, effects, value }) => (
     <select onChange={onChange} value={value}>
       {state.cities !== undefined
-        ? state.cites.map(city => <option>{city}</option>)
+        ? state.cites.map((city) => <option>{city}</option>)
         : null}
     </select>
   ))
@@ -193,7 +193,7 @@ const CitySelector = provideState({
 })(
   injectState(({ onChange, state, effects, value }) => (
     <select onChange={onChange} value={value}>
-      {state.cites.map(city => (
+      {state.cites.map((city) => (
         <option>{city}</option>
       ))}
     </select>
@@ -285,10 +285,10 @@ export default provideState({
     familyName: "Harriman",
   }),
   effects: {
-    onChangeGiven: (_, { target: { value } }) => state => ({
+    onChangeGiven: (_, { target: { value } }) => (state) => ({
       givenName: value,
     }),
-    onChangeFamily: (_, { target: { value } }) => state => ({
+    onChangeFamily: (_, { target: { value } }) => (state) => ({
       familyName: value,
     }),
   },

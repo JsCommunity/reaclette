@@ -4,15 +4,15 @@ import InvalidEntryError from "./_InvalidEntryError";
 // React does not support symbols :/
 const TAG = "reaclette";
 
-const call = f => f();
-const isPromise = v => v != null && typeof v.then === "function";
+const call = (f) => f();
+const isPromise = (v) => v != null && typeof v.then === "function";
 const noop = Function.prototype;
 const { create, keys, seal } = Object;
 
 const makeSpy = (keys, accessor) => {
   const descriptors = create(null);
   const spy = new Map();
-  keys.forEach(k => {
+  keys.forEach((k) => {
     descriptors[k] = {
       enumerable: true,
       get: () => {
@@ -48,7 +48,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
         : noop,
   };
 
-  const injectState = ChildComponent =>
+  const injectState = (ChildComponent) =>
     class StateInjector extends Component {
       static WrappedComponent = ChildComponent;
 
@@ -65,7 +65,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
         const { state } = parent;
         [this._stateProxy, this._stateSpy] = makeSpy(
           parent.stateKeys,
-          k => state[k]
+          (k) => state[k]
         );
         seal(this._stateProxy);
       }
@@ -92,7 +92,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
     };
 
   const provideState = ({ computed, effects, initialState }) => {
-    const wrapComponentWithState = ChildComponent => {
+    const wrapComponentWithState = (ChildComponent) => {
       class StateProvider extends Component {
         static WrappedComponent =
           (ChildComponent != null && ChildComponent.WrappedComponent) ||
@@ -111,7 +111,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             // computedCache.clear()
             listeners.forEach(call);
           });
-          this._subscribe = listener => {
+          this._subscribe = (listener) => {
             listeners.add(listener);
             return () => {
               listeners.delete(listener);
@@ -123,10 +123,10 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
           if (computed !== undefined) {
             const propsKeys = keys(props);
-            const propsAccessor = k => this.props[k];
-            const stateAccessor = k => completeState[k];
+            const propsAccessor = (k) => this.props[k];
+            const stateAccessor = (k) => completeState[k];
 
-            keys(computed).forEach(k => {
+            keys(computed).forEach((k) => {
               let c = computed[k];
               let placeholder,
                 previousValue,
@@ -144,7 +144,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                     [propsProxy, propsSpy] = makeSpy(propsKeys, propsAccessor);
                     seal(propsProxy);
                     [stateProxy, stateSpy] = makeSpy(
-                      completeStateKeys.filter(key => key !== k),
+                      completeStateKeys.filter((key) => key !== k),
                       stateAccessor
                     );
                     Object.defineProperty(stateProxy, k, {
@@ -178,7 +178,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
 
                   // rejections are explicitly not handled
                   const promise = previousValue;
-                  previousValue.then(value => {
+                  previousValue.then((value) => {
                     if (previousValue === promise) {
                       previousValue = value;
                       dispatch();
@@ -194,7 +194,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
           if (initialState !== undefined) {
             state = initialState(props);
 
-            keys(state).forEach(k => {
+            keys(state).forEach((k) => {
               if (k in stateDescriptors) {
                 throw new TypeError(
                   `conflict: "${k}" is defined both in state and computed`
@@ -208,7 +208,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               stateDescriptors[k] = roDescriptor;
               writableStateDescriptors[k] = {
                 ...roDescriptor,
-                set: value => {
+                set: (value) => {
                   state = { ...state, [k]: value };
                   dispatch();
                 },
@@ -239,7 +239,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             return Promise.resolve();
           };
 
-          parentStateKeys.forEach(k => {
+          parentStateKeys.forEach((k) => {
             if (!(k in stateDescriptors)) {
               completeStateKeys.push(k);
             }
@@ -251,7 +251,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
               create(parentState, writableStateDescriptors)
             );
 
-            const setState = newState => {
+            const setState = (newState) => {
               if (newState == null) {
                 return;
               }
@@ -265,7 +265,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
                 return then.call(newState, setState);
               }
 
-              Object.keys(newState).forEach(key => {
+              Object.keys(newState).forEach((key) => {
                 if (!Object.prototype.hasOwnProperty.call(state, key)) {
                   throw new InvalidEntryError(key);
                 }
@@ -275,7 +275,7 @@ module.exports = ({ Component, createElement, PropTypes }) => {
             };
 
             effectsDescriptors = create(null);
-            keys(effects).forEach(k => {
+            keys(effects).forEach((k) => {
               const e = effects[k];
               const wrappedEffect = (...args) => {
                 try {

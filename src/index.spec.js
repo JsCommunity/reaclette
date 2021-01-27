@@ -22,7 +22,7 @@ const makeTestInstance = (opts, props) => {
         ...opts,
         effects: {
           ...opts.effects,
-          _setState: (_, props) => _ => props,
+          _setState: (_, props) => (_) => props,
         },
       })(injectState(Child)),
       props
@@ -146,7 +146,7 @@ describe("provideState", () => {
           foo: () => {},
         },
       });
-      return effects.foo().then(value => {
+      return effects.foo().then((value) => {
         expect(value).toBe(undefined);
       });
     });
@@ -276,7 +276,7 @@ describe("provideState", () => {
       let promise, resolve;
       const reset = () => {
         // eslint-disable-next-line promise/param-names
-        promise = new Promise(resolve_ => {
+        promise = new Promise((resolve_) => {
           resolve = resolve_;
         });
       };
