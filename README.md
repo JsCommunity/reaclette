@@ -35,7 +35,7 @@ const wrapComponentWithState = provideState({
   initialState: () => ({ counter: 0 }),
   effects: {
     addOne() {
-      this.state += 1;
+      this.state.counter += 1;
     },
   },
   computed: {
